@@ -4,77 +4,60 @@ info:
   description: API для CRM-системы с возможностью настройки сущностей и автоматизации задач.
   version: 1.0.0
 servers:
-  - url: http://localhost:3000/v1/auth
+  - url: http://localhost:3000/v1
     description: Локальный сервер
 
 paths:
-  /register:
-    post:
-      summary: Регистрация пользователя
-      description: Регистрирует нового пользователя и отправляет код подтверждения на email.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - email
-                - password
-                - name
-                - surname
-                - phoneNumber
-              properties:
-                email:
-                  type: string
-                  format: email
-                password:
-                  type: string
-                  format: password
-                name:
-                  type: string
-                surname:
-                  type: string
-                phoneNumber:
-                  type: string
-      responses:
-        '200':
-          description: Код подтверждения отправлен
+    /auth/register:
+      post:
+        summary: Регистрация пользователя
+        description: Регистрирует нового пользователя и отправляет код подтверждения на email.
+        requestBody:
+          required: true
           content:
             application/json:
               schema:
-                type: string
-                example: Code was sent on email. Send it to confirm registration
-        '400':
-          description: Неверные данные
-        '409':
-          description: Пользователь уже зарегестрирован
-        '429':
-          description: Слишком много попыток отправки email, попробуйте позже
-
-  /verify-register:
-    post:
-      summary: Подтверждение регистрации
-      description: Проверяет код подтверждения и завершает регистрацию.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - email
-                - code
-              properties:
-                email:
+                type: object
+                required:
+                  - email
+                  - password
+                  - name
+                  - surname
+                  - phoneNumber
+                properties:
+                  email:
+                    type: string
+                    format: email
+                  password:
+                    type: string
+                    format: password
+                  name:
+                    type: string
+                  surname:
+                    type: string
+                  phoneNumber:
+                    type: string
+        responses:
+          '200':
+            description: Код подтверждения отправлен
+            content:
+              application/json:
+                schema:
                   type: string
-                  format: email
-                code:
-                  type: integer
-                  format: int32
-      responses:
-        '201':
-          description: Регистрация подтверждена
+                  example: Code was sent on email. Send it to confirm registration
+          '400':
+            description: Неверные данные
+          '409':
+            description: Пользователь уже зарегестрирован
+          '429':
+            description: Слишком много попыток отправки email, попробуйте позже
+
+    /auth/verify-register:
+      post:
+        summary: Подтверждение регистрации
+        description: Проверяет код подтверждения и завершает регистрацию.
+        requestBody:
+          required: true
           content:
             application/json:
               schema:
@@ -83,206 +66,223 @@ paths:
                   - email
                   - code
                 properties:
-                  userData:
-                    type: object
-                    properties:
-                      uuid:
-                        type: string
-                        example: 0a32478b-b48e-4988-8f05-c259614ff448
-                      email:
-                        type: string
-                        example: testemail@gmail.com
-                      name:
-                        type: string
-                        example: Nikita
-                      surname:
-                        type: string
-                        example: Tsarenko
-                      phoneNumber:
-                        type: string
-                        example: "+79221110500"
-                      role:
-                        type: string
-                        example: executor
-                  jwt:
+                  email:
                     type: string
-        '400':
-          description: Неверные данные или истекший/неверный код
+                    format: email
+                  code:
+                    type: integer
+                    format: int32
+        responses:
+          '201':
+            description: Регистрация подтверждена
+            content:
+              application/json:
+                schema:
+                  type: object
+                  required:
+                    - email
+                    - code
+                  properties:
+                    userData:
+                      type: object
+                      properties:
+                        uuid:
+                          type: string
+                          example: 0a32478b-b48e-4988-8f05-c259614ff448
+                        email:
+                          type: string
+                          example: testemail@gmail.com
+                        name:
+                          type: string
+                          example: Nikita
+                        surname:
+                          type: string
+                          example: Tsarenko
+                        phoneNumber:
+                          type: string
+                          example: "+79221110500"
+                        role:
+                          type: string
+                          example: executor
+                    jwt:
+                      type: string
+          '400':
+            description: Неверные данные или истекший/неверный код
 
-  /resend-code:
-    post:
-      summary: Повторная отправка кода
-      description: Отправляет повторно код подтверждения на email.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - email
-              properties:
-                email:
-                  type: string
-                  format: email
-      responses:
-        '200':
-          description: Код отправлен повторно
-          content:
-            text/html:
-              schema:
-                type: string
-                example: Code is resend
-        '400':
-          description: Неверные данные
-        '429':
-          description: Слишком много попыток отправки email, попробуйте позже
-
-  /login:
-    post:
-      summary: Авторизация пользователя
-      description: Авторизует пользователя и возвращает JWT токен.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - email
-                - password
-              properties:
-                email:
-                  type: string
-                  format: email
-                password:
-                  type: string
-                  format: password
-      responses:
-        '200':
-          description: Успешная авторизация, возвращает JWT
+    /auth/resend-code:
+      post:
+        summary: Повторная отправка кода
+        description: Отправляет повторно код подтверждения на email.
+        requestBody:
+          required: true
           content:
             application/json:
               schema:
                 type: object
+                required:
+                  - email
                 properties:
-                  userData:
-                    type: object
-                    properties:
-                      name:
-                        type: string
-                        example: Nikita
-                      surname:
-                        type: string
-                        example: Tsarenko
-                      phoneNumber:
-                        type: string
-                        example: "+79221110500"
-                      role:
-                        type: string
-                        example: executor
-                      email:
-                        type: string
-                        example: testemail@gmail.com
-                      uuid:
-                        type: string
-                        example: 0a32478b-b48e-4988-8f05-c259614ff448
-                  jwt:
+                  email:
                     type: string
-        '400':
-          description: Неверные данные
-        '401':
-          description: Неверные учетные данные
+                    format: email
+        responses:
+          '200':
+            description: Код отправлен повторно
+            content:
+              text/html:
+                schema:
+                  type: string
+                  example: Code is resend
+          '400':
+            description: Неверные данные
+          '429':
+            description: Слишком много попыток отправки email, попробуйте позже
 
-  /forgot-password:
-    post:
-      summary: Запрос на восстановление пароля
-      description: Отправляет код восстановления на email пользователя.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - email
-              properties:
-                email:
-                  type: string
-                  format: email
-      responses:
-        '200':
-          description: Код восстановления отправлен
+    /auth/login:
+      post:
+        summary: Авторизация пользователя
+        description: Авторизует пользователя и возвращает JWT токен.
+        requestBody:
+          required: true
           content:
-            text/html:
+            application/json:
               schema:
-                type: string
-                example: Code was successful sent on email. Continue reset
-        '400':
-          description: Неверные данные
-        '429':
-          description: Слишком много попыток отправки email, попробуйте позже
+                type: object
+                required:
+                  - email
+                  - password
+                properties:
+                  email:
+                    type: string
+                    format: email
+                  password:
+                    type: string
+                    format: password
+        responses:
+          '200':
+            description: Успешная авторизация, возвращает JWT
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    userData:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: Nikita
+                        surname:
+                          type: string
+                          example: Tsarenko
+                        phoneNumber:
+                          type: string
+                          example: "+79221110500"
+                        role:
+                          type: string
+                          example: executor
+                        email:
+                          type: string
+                          example: testemail@gmail.com
+                        uuid:
+                          type: string
+                          example: 0a32478b-b48e-4988-8f05-c259614ff448
+                    jwt:
+                      type: string
+          '400':
+            description: Неверные данные
+          '401':
+            description: Неверные учетные данные
 
-  /verify-reset-password:
-    post:
-      summary: Проверка кода перед восстановлением пароля
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - email
-                - code
-              properties:
-                email:
-                  type: string
-                  format: email
-                code:
-                  type: integer
-                  format: int32
-      responses:
-        '200':
-          description: Код подтвержден
+    /auth/forgot-password:
+      post:
+        summary: Запрос на восстановление пароля
+        description: Отправляет код восстановления на email пользователя.
+        requestBody:
+          required: true
           content:
-            text/html:
+            application/json:
               schema:
-                type: string
-                example: Code is correct
-        '400':
-          description: Неверный код или неверные данные
+                type: object
+                required:
+                  - email
+                properties:
+                  email:
+                    type: string
+                    format: email
+        responses:
+          '200':
+            description: Код восстановления отправлен
+            content:
+              text/html:
+                schema:
+                  type: string
+                  example: Code was successful sent on email. Continue reset
+          '400':
+            description: Неверные данные
+          '429':
+            description: Слишком много попыток отправки email, попробуйте позже
 
-  /reset-password:
-    post:
-      summary: Смена пароля
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - email
-                - code
-                - newPassword
-              properties:
-                email:
-                  type: string
-                  format: email
-                code:
-                  type: integer
-                  format: int32
-                newPassword:
-                  type: string
-                  format: password
-      responses:
-        '201':
-          description: Пароль успешно изменен
+    /auth/verify-reset-password:
+      post:
+        summary: Проверка кода перед восстановлением пароля
+        requestBody:
+          required: true
           content:
-            text/html:
+            application/json:
               schema:
-                type: string
-                example: Password was changed successful
-        '400':
-          description: Неверный код или неверные данные
+                type: object
+                required:
+                  - email
+                  - code
+                properties:
+                  email:
+                    type: string
+                    format: email
+                  code:
+                    type: integer
+                    format: int32
+        responses:
+          '200':
+            description: Код подтвержден
+            content:
+              text/html:
+                schema:
+                  type: string
+                  example: Code is correct
+          '400':
+            description: Неверный код или неверные данные
+
+    /auth/reset-password:
+      post:
+        summary: Смена пароля
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - email
+                  - code
+                  - newPassword
+                properties:
+                  email:
+                    type: string
+                    format: email
+                  code:
+                    type: integer
+                    format: int32
+                  newPassword:
+                    type: string
+                    format: password
+        responses:
+          '201':
+            description: Пароль успешно изменен
+            content:
+              text/html:
+                schema:
+                  type: string
+                  example: Password was changed successful
+          '400':
+            description: Неверный код или неверные данные
