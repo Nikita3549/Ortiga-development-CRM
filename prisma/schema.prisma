@@ -9,8 +9,8 @@ datasource db {
 
 model User {
   uuid           String   @id @default(uuid())
-  email          String
-  passwordHashed String   @map("password_hashed")
+  email          String   @unique
+  hashedPassword String   @map("hashed_password")
   name           String
   surname        String
   avatarUrl      String?  @map("avatar_url")
@@ -27,7 +27,7 @@ model User {
 model UserSettings {
   user_uuid String @id
 
-  users_uuid User @relation(fields: [user_uuid], references: [uuid])
+  users_uuid User @relation(fields: [user_uuid], references: [uuid], onDelete: Cascade)
 
   @@map("user_settings")
 }
