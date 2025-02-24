@@ -25,9 +25,10 @@ model User {
 }
 
 model UserSettings {
-  user_uuid String @id
+  userUuid  String  @id @map("user_uuid")
+  darkTheme Boolean @default(false) @map("dark_theme")
 
-  users_uuid User @relation(fields: [user_uuid], references: [uuid], onDelete: Cascade)
+  users_uuid User @relation(fields: [userUuid], references: [uuid], onDelete: Cascade)
 
   @@map("user_settings")
 }

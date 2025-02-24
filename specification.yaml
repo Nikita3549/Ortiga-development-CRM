@@ -286,3 +286,49 @@ paths:
                   example: Password was changed successful
           '400':
             description: Неверный код или неверные данные
+    /settings/update:
+      put:
+        summary: Изменение настроек
+        description: Обновляет настройки пользователя.
+        security:
+          - bearerAuth: [ ]
+        requestBody:
+          required: true
+          content:
+            application/json:
+                schema:
+                  $ref: "#/components/schemas/UserSettings"
+        responses:
+          '200':
+            description: Настройки успешно обновлены
+          '400':
+            description: Ошибка в данных
+
+    /settings:
+      get:
+        summary: Получение настроек
+        description: Возвращает текущие настройки пользователя.
+        security:
+          - bearerAuth: [ ]
+        responses:
+          '200':
+            description: Успешный ответ с настройками
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/UserSettings"
+          '400':
+            description: Ошибка запроса
+components:
+  schemas:
+    UserSettings:
+      type: object
+      properties:
+        darkTheme:
+          type: boolean
+          example: true
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

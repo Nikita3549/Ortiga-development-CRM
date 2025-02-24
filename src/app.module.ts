@@ -8,6 +8,7 @@ import { UserModule } from './modules/user/user.module';
 import { RedisModule } from './modules/redis/redis.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { TokenModule } from './modules/token/token.module';
+import { SettingsModule } from './modules/settings/settings.module';
 
 @Module({
 	imports: [
@@ -18,6 +19,7 @@ import { TokenModule } from './modules/token/token.module';
 		RedisModule,
 		NotificationsModule,
 		TokenModule,
+		SettingsModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],
