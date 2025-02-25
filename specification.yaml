@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: CRM API
-  description: API для CRM-системы с возможностью настройки сущностей и автоматизации задач.
+  description: API для CRM-системы с возможностью настройки сущностей и автоматизации задач. Абсолютно каждый метод также может вернуть 500 код, в случае ошибки на сервере. Также как и любой защищенный роут может вернуть 401 код(Unauthorized)
   version: 1.0.0
 servers:
   - url: http://localhost:3000/v1
@@ -319,14 +319,146 @@ paths:
                   $ref: "#/components/schemas/UserSettings"
           '400':
             description: Ошибка запроса
+    /user:
+      get:
+        summary: Получение всех пользователей
+        description: Возвращает список пользователей.
+        security:
+          - bearerAuth: [ ]
+        responses:
+          '200':
+            description: Список пользователей
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/User"
+
+    /user/update:
+        put:
+          summary: Изменение пользователя
+          description: Обновляет данные о пользователе.
+          security:
+            - bearerAuth: [ ]
+          requestBody:
+            required: true
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    surname:
+                      type: string
+                    phoneNumber:
+                      type: string
+          responses:
+            '200':
+              description: Данные пользователя обновлены
+              content:
+                application/json:
+                  schema:
+                    $ref: "#/components/schemas/UserDataWithJwt"
+    /user/upload-avatar:
+      post:
+        summary: Загрузка аватарки
+        description: Загружает новую аватарку пользователя.
+        security:
+          - bearerAuth: [ ]
+        requestBody:
+          required: true
+          content:
+            multipart/form-data:
+              schema:
+                type: object
+                properties:
+                  avatar:
+                    type: string
+                    format: binary
+        responses:
+          '201':
+            description: Аватарка загружена
+          '400':
+            description: Неверный запрос
+          '413':
+            description: Файл превышает допустимый размер (5МБ)
+
+    /user/avatar/{userUuid}:
+      get:
+        summary: Получение аватарки пользователя
+        description: Возвращает аватарку пользователя по его ID.
+        security:
+          - bearerAuth: [ ]
+        parameters:
+          - name: userUuid
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+        responses:
+          '200':
+            description: Аватарка пользователя
+            content:
+              image/png: { }
+              image/jpeg: { }
 components:
   schemas:
+    UserDataWithJwt:
+      type: object
+      properties:
+        userData:
+          type: object
+          properties:
+            uuid:
+              type: string
+              example: 0a32478b-b48e-4988-8f05-c259614ff448
+            email:
+              type: string
+              example: testemail@gmail.com
+            name:
+              type: string
+              example: Nikita
+            surname:
+              type: string
+              example: Tsarenko
+            phoneNumber:
+              type: string
+              example: "+79221110500"
+            role:
+              type: string
+              example: executor
+        jwt:
+          type: string
     UserSettings:
       type: object
       properties:
         darkTheme:
           type: boolean
           example: true
+    User:
+      type: object
+      properties:
+          name:
+            type: string
+            example: Nikita
+          surname:
+            type: string
+            example: Tsarenko
+          phoneNumber:
+            type: string
+            example: "+79221110500"
+          role:
+            type: string
+            example: executor
+          email:
+            type: string
+            example: testemail@gmail.com
+          uuid:
+            type: string
+            example: 0a32478b-b48e-4988-8f05-c259614ff448
   securitySchemes:
     bearerAuth:
       type: http

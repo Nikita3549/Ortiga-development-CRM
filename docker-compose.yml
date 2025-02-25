@@ -33,6 +33,7 @@ services:
       - 3000:${API_PORT}
     volumes:
       - ./.env:/opt/api/.env
+      - ./avatars:/opt/api/avatars
     networks:
       - mainNetwork
     depends_on:

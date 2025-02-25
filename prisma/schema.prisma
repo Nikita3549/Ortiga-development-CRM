@@ -13,7 +13,7 @@ model User {
   hashedPassword String   @map("hashed_password")
   name           String
   surname        String
-  avatarUrl      String?  @map("avatar_url")
+  avatarPath     String?  @map("avatar_path")
   phoneNumber    String   @map("phone_number")
   role           Role
   createdAt      DateTime @default(now()) @map("created_at")
