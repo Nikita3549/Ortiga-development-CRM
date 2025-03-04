@@ -52,7 +52,6 @@ export class UserService {
 		return this.prisma.user.create({
 			data: {
 				...registerData,
-				role: Role.executor,
 				settings: {
 					create: {},
 				},

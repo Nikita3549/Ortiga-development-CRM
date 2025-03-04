@@ -111,7 +111,7 @@ export class AuthController {
 			name: userData.name,
 			surname: userData.surname,
 			phoneNumber: userData.phoneNumber,
-			role: 'executor',
+			role: 'EXECUTOR',
 		});
 
 		return {

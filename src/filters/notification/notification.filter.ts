@@ -7,6 +7,7 @@ export class NotificationFilter implements ExceptionFilter {
 	catch(exception: NotificationException, host: ArgumentsHost) {
 		const ctx = host.switchToHttp();
 		const res = ctx.getResponse<Response>();
+		console.log(exception);
 
 		return res.status(exception.statusCode).send({
 			statusCode: exception.statusCode,

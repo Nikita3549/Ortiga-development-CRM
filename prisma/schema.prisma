@@ -15,11 +15,13 @@ model User {
   surname        String
   avatarPath     String?  @map("avatar_path")
   phoneNumber    String   @map("phone_number")
-  role           Role
+  role           Role     @default(EXECUTOR)
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
-  settings UserSettings[]
+  settings   UserSettings[]
+  messages   Message[]
+  chatMember ChatMember[]
 
   @@map("users")
 }
@@ -33,10 +35,64 @@ model UserSettings {
   @@map("user_settings")
 }
 
+model Chat {
+  uuid      String   @id @default(uuid())
+  type      ChatType @default(DIRECT)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  messages Message[]
+  members  ChatMember[]
+
+  @@map("chats")
+}
+
+model Message {
+  uuid      String   @id @default(uuid())
+  chatId    String   @map("chat_id")
+  senderId  String   @map("sender_id")
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  chat         Chat          @relation(fields: [chatId], references: [uuid])
+  sender       User          @relation(fields: [senderId], references: [uuid])
+  messagesRead MessageRead[]
+
+  @@map("messages")
+}
+
+model MessageRead {
+  messageId String   @id @map("message_id")
+  senderId  String   @map("user_id")
+  readAt    DateTime @default(now()) @map("read_at")
+
+  message Message @relation(fields: [messageId], references: [uuid], onDelete: Cascade)
+
+  @@map("message_read")
+}
+
+model ChatMember {
+  chatId  String
+  userId  String
+  isAdmin Boolean @default(false) @map("is_admin")
+
+  chat Chat @relation(fields: [chatId], references: [uuid])
+  user User @relation(fields: [userId], references: [uuid])
+
+  @@id([chatId, userId])
+  @@map("chat_members")
+}
+
 enum Role {
-  admin
-  executor
-  contorller
+  ADMIN
+  EXECUTOR
+  CONTROLLER
 
   @@map("roles")
+}
+
+enum ChatType {
+  DIRECT
+  GROUP
+
+  @@map("chat_types")
 }

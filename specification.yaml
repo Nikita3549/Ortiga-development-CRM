@@ -404,6 +404,199 @@ paths:
             content:
               image/png: { }
               image/jpeg: { }
+    /chat/all:
+      get:
+        summary: HTTP Получить все чаты пользователя с сообщениями
+        description: Возвращает список чатов, в которых участвует пользователь, включая сообщения в каждом чате.
+        security:
+          - BearerAuth: [ ]
+        responses:
+          '200':
+            description: Успешный ответ со списком чатов и сообщениями
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      uuid:
+                        type: string
+                        description: Уникальный идентификатор чата
+                        example: "c5d1a5f1-2a89-4c90-9a16-7ad5a2345678"
+                      messages:
+                        type: array
+                        description: Список сообщений в чате
+                        items:
+                          type: object
+                          properties:
+                            uuid:
+                              type: string
+                              description: Уникальный идентификатор сообщения
+                              example: "m5d1a5f1-2a89-4c90-9a16-7ad5a2345678"
+                            senderId:
+                              type: string
+                              description: UUID отправителя
+                              example: "u5d1a5f1-2a89-4c90-9a16-7ad5a2345678"
+                            content:
+                              type: string
+                              description: Текст сообщения
+                              example: "Привет, как дела?"
+                            createdAt:
+                              type: string
+                              format: date-time
+                              description: Дата и время отправки
+                              example: "2025-03-04T12:34:56.789Z"
+          '401':
+            description: Ошибка авторизации (требуется токен)
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                      example: "Unauthorized"
+    /chat:
+      get:
+        summary: WEBSOCKET Создание подключения
+        description: 'Ивенты, которые приходят с сервера: 
+        exception, message_receive, message_ack, new_chat, message_read'
+        security:
+          - bearerAuth: [ ]
+        responses:
+          '200':
+            description: Подключение создано
+          '401':
+            description: Неверный токен
+    /chat/new_chat:
+      post:
+        summary: WEBSOCKET Создание нового чата
+        description: >
+          Событие `new_chat` отправляется через WebSocket для создания нового чата с указанным пользователем.
+          При успешном создании чата сервер возвращает подтверждение.
+        requestBody:
+          description: Объект с данными для создания чата
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  secondChatUser:
+                    type: string
+                    description: UUID второго пользователя для чата
+                    example: "user_uuid_2"
+        responses:
+          '200':
+            description: Чат успешно создан
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      description: Результат создания чата
+                      example: "Successful created"
+          '400':
+            description: Ошибка создания чата (например, неверный ID чата или пользователя)
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                      example: "INVALID_CHAT_ID или INVALID_USER_ID"
+    /chat/message_send:
+      post:
+        summary: WEBSOCKET Отправка сообщения
+        description: >
+          Событие `message_send` используется для отправки нового сообщения в чат.
+          После создания сообщения сервер отправляет событие `message_ack` с подтверждением.
+        requestBody:
+          description: Объект с данными отправляемого сообщения
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  chatId:
+                    type: string
+                    description: UUID чата, в который отправляется сообщение
+                    example: "chat_uuid"
+                  content:
+                    type: string
+                    description: Текст сообщения
+                    example: "Привет!"
+        responses:
+          '200':
+            description: Подтверждение успешной отправки сообщения
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    ack:
+                      type: string
+                      description: Подтверждение с UUID созданного сообщения
+                      example: "MESSAGE_ACK_SUCCESSFUL(message.uuid)"
+          '400':
+            description: Ошибка отправки сообщения (например, неверный ID чата)
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                      example: "INVALID_CHAT_ID"
+    /chat/message_read:
+      post:
+        summary: WEBSOCKET Подтверждение прочтения сообщения
+        description: >
+          Событие `message_read` отправляется для уведомления участников чата о прочтении сообщения.
+        requestBody:
+          description: Объект с данными о прочитанном сообщении
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messageId:
+                    type: string
+                    description: UUID сообщения
+                    example: "message_uuid"
+                  chatId:
+                    type: string
+                    description: UUID чата
+                    example: "chat_uuid"
+        responses:
+          '200':
+            description: Уведомление о прочтении успешно доставлено
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    result:
+                      type: string
+                      description: Результат операции
+                      example: "Сообщение прочитано"
+          '400':
+            description: Ошибка при уведомлении о прочтении (например, неверный ID сообщения)
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                      example: "INVALID_MESSAGE_ID"
+
 components:
   schemas:
     UserDataWithJwt:

@@ -5,9 +5,17 @@ import { ConfigService } from '../config/config.service';
 
 @Injectable()
 export class TokenService {
-	constructor(private readonly config: ConfigService) {}
+	private JWT_SECRET: string;
+
+	constructor(private readonly config: ConfigService) {
+		this.JWT_SECRET = this.config.get('JWT_SECRET');
+	}
 
 	generateJWT(payload: IJwtPayload): string {
-		return jwt.sign(payload, this.config.get('JWT_SECRET'));
+		return jwt.sign(payload, this.JWT_SECRET);
+	}
+
+	verifyJWT(JWT: string): IJwtPayload {
+		return jwt.verify(JWT, this.JWT_SECRET) as IJwtPayload;
 	}
 }

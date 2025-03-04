@@ -9,6 +9,7 @@ import { RedisModule } from './modules/redis/redis.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { TokenModule } from './modules/token/token.module';
 import { SettingsModule } from './modules/settings/settings.module';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Module({
 	imports: [
@@ -20,6 +21,7 @@ import { SettingsModule } from './modules/settings/settings.module';
 		NotificationsModule,
 		TokenModule,
 		SettingsModule,
+		ChatModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],
