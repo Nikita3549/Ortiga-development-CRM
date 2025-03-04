@@ -461,7 +461,7 @@ paths:
       get:
         summary: WEBSOCKET Создание подключения
         description: 'Ивенты, которые приходят с сервера: 
-        exception, message_receive, message_ack, new_chat, message_read'
+        exception, message_receive, message_ack, new_chat, message_read, status_online, status_offline'
         security:
           - bearerAuth: [ ]
         responses:
@@ -469,7 +469,7 @@ paths:
             description: Подключение создано
           '401':
             description: Неверный токен
-    /chat/new_chat:
+    new_chat:
       post:
         summary: WEBSOCKET Создание нового чата
         description: >
@@ -509,7 +509,7 @@ paths:
                     error:
                       type: string
                       example: "INVALID_CHAT_ID или INVALID_USER_ID"
-    /chat/message_send:
+    message_send:
       post:
         summary: WEBSOCKET Отправка сообщения
         description: >
@@ -553,7 +553,7 @@ paths:
                     error:
                       type: string
                       example: "INVALID_CHAT_ID"
-    /chat/message_read:
+    message_read:
       post:
         summary: WEBSOCKET Подтверждение прочтения сообщения
         description: >
@@ -596,6 +596,33 @@ paths:
                     error:
                       type: string
                       example: "INVALID_MESSAGE_ID"
+    status_follow:
+      post:
+        summary: WEBSOCKET Подписаться на статус пользователя
+        description: Подписывает клиента на обновления статуса другого пользователя (онлайн/офлайн). Сразу возвращает ивент status_online/status_offline. А позже вызывает эти ивенты при изменении статуса.
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                  type: object
+                  properties:
+                    userUuid:
+                      type: error
+                      example: userUuid
+        responses:
+          '200':
+            description: Клиент подписался на обновления статуса.
+          '400':
+            description: Ошибка запроса (например, подписка на самого себя).
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                      example: "Bad Request"
 
 components:
   schemas:

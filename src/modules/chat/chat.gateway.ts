@@ -1,5 +1,6 @@
 import {
 	OnGatewayConnection,
+	OnGatewayDisconnect,
 	SubscribeMessage,
 	WebSocketGateway,
 	WebSocketServer,
@@ -21,6 +22,7 @@ import {
 import { MessageReadDto } from './dto/message-read.dto';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { ValidationFilter } from './filters/validation.filter';
+import { FollowStatusDto } from './dto/follow-status.dto';
 
 @WebSocketGateway({
 	namespace: '/chat',
@@ -30,7 +32,7 @@ import { ValidationFilter } from './filters/validation.filter';
 })
 @UseFilters(new ValidationFilter())
 @UsePipes(new ValidationPipe({ transform: true }))
-export class ChatGateway implements OnGatewayConnection {
+export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	constructor(
 		private readonly tokenService: TokenService,
 		private readonly chatService: ChatService,
@@ -50,6 +52,11 @@ export class ChatGateway implements OnGatewayConnection {
 			const { uuid: userUuid } = this.tokenService.verifyJWT(token);
 
 			(client as AuthSocket).data.userUuid = userUuid;
+
+			await this.chatService.saveOnlineStatus(userUuid);
+			this.server
+				.in(`status_${userUuid}`)
+				.emit('status_online', userUuid);
 		} catch (e: unknown) {
 			client.emit('exception', INVALID_TOKEN);
 			client.disconnect();
@@ -70,6 +77,14 @@ export class ChatGateway implements OnGatewayConnection {
 		for (let i = 0; i < unreadMessages.length; i++) {
 			client.emit('message_receive', unreadMessages[i]);
 		}
+	}
+
+	async handleDisconnect(client: AuthSocket) {
+		const { userUuid } = client.data;
+
+		await this.chatService.deleteOnlineStatus(userUuid);
+
+		this.server.in(`status_${userUuid}`).emit('status_offline', userUuid);
 	}
 
 	@SubscribeMessage('new_chat')
@@ -108,12 +123,31 @@ export class ChatGateway implements OnGatewayConnection {
 
 		await this.chatService
 			.createMessageRead(messageId, client.data.userUuid)
-			.catch((e: unknown) => {
+			.catch((_e: unknown) => {
 				throw new WsException(INVALID_MESSAGE_ID);
 			});
 
 		client.broadcast
 			.to(`chat_${dto.chatId}`)
 			.emit('message_read', messageId);
+	}
+
+	@SubscribeMessage('status_follow')
+	async handleStatusFollow(client: AuthSocket, dto: FollowStatusDto) {
+		const { userUuid } = dto;
+
+		if (userUuid == client.data.userUuid) {
+			throw new WsException('Bad Request');
+		}
+
+		client.join(`status_${userUuid}`);
+
+		const isOnline = await this.chatService.isOnline(userUuid);
+
+		if (isOnline) {
+			client.emit('status_online', userUuid);
+		} else {
+			client.emit('status_offline', userUuid);
+		}
 	}
 }

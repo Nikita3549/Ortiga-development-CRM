@@ -2,10 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Chat, Message, MessageRead } from '@prisma/client';
 import { IUserChatsWithMessages } from './interfaces/IUserChatsWithMessages';
+import { RedisService } from '../redis/redis.service';
 
 @Injectable()
 export class ChatService {
-	constructor(private readonly prisma: PrismaService) {}
+	constructor(
+		private readonly prisma: PrismaService,
+		private readonly redis: RedisService,
+	) {}
 
 	async getUnreadMessages(userId: string): Promise<Message[]> {
 		return this.prisma.message.findMany({
@@ -97,5 +101,15 @@ export class ChatService {
 				},
 			},
 		});
+	}
+
+	async saveOnlineStatus(userId: string) {
+		await this.redis.set(`online_${userId}`, 'online');
+	}
+	async deleteOnlineStatus(userId: string) {
+		await this.redis.del(`online_${userId}`);
+	}
+	async isOnline(userId: string): Promise<boolean> {
+		return !!(await this.redis.get(`online_${userId}`));
 	}
 }
