@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Role, User } from '@prisma/client';
+import { User } from '@prisma/client';
 import { ISaveUserData } from './interfaces/saveUserData.interface';
 import { IPublicUserData } from './interfaces/publicUserData.interface';
 import { IUpdateData } from './interfaces/update-data.interface';

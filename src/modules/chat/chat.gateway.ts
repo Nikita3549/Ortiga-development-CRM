@@ -105,7 +105,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 	@SubscribeMessage('message_send')
 	async handleSendMessage(client: AuthSocket, dto: SendMessageDto) {
-		let { chatId, content } = dto;
+		const { chatId, content } = dto;
 
 		const message = await this.chatService
 			.createMessage(chatId, client.data.userUuid, content)
