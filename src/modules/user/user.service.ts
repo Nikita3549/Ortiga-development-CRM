@@ -16,6 +16,21 @@ export class UserService {
 			},
 		});
 	}
+	async getUserById(uuid: string): Promise<IPublicUserData | null> {
+		return this.prisma.user.findFirst({
+			where: {
+				uuid,
+			},
+			select: {
+				uuid: true,
+				email: true,
+				name: true,
+				surname: true,
+				phoneNumber: true,
+				role: true,
+			},
+		});
+	}
 	async getPublicUsers(): Promise<IPublicUserData[]> {
 		return this.prisma.user.findMany({
 			select: {

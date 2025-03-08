@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: CRM API
-  description: API для CRM-системы с возможностью настройки сущностей и автоматизации задач. Абсолютно каждый метод также может вернуть 500 код, в случае ошибки на сервере. Также как и любой защищенный роут может вернуть 401 код(Unauthorized)
+  description: API для CRM-системы с возможностью настройки сущностей и автоматизации задач. Абсолютно каждый метод также может вернуть 500 код, в случае ошибки на сервере. Также как и любой защищенный роут может вернуть 401 код(Unauthorized) и 403 код если у пользователя нету прав доступа к ресурсу из-за его роли.
   version: 1.0.0
 servers:
   - url: http://localhost:3000/v1
@@ -334,7 +334,28 @@ paths:
                   type: array
                   items:
                     $ref: "#/components/schemas/User"
-
+    /user/{id}:
+      get:
+        summary: Получить информацию о пользователе
+        description: Возвращает публичные данные пользователя по его ID.
+        security:
+          - bearerAuth: [ ]
+        parameters:
+          - name: id
+            in: path
+            required: true
+            description: Уникальный идентификатор пользователя
+            schema:
+              type: string
+        responses:
+          200:
+            description: Успешный ответ с данными пользователя
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/IPublicUserData'
+          404:
+            description: Пользователь не найден
     /user/update:
         put:
           summary: Изменение пользователя
@@ -626,6 +647,27 @@ paths:
 
 components:
   schemas:
+    IPublicUserData:
+      type: object
+      properties:
+        uuid:
+          type: string
+          example: 0a32478b-b48e-4988-8f05-c259614ff448
+        email:
+          type: string
+          example: testemail@gmail.com
+        name:
+          type: string
+          example: Nikita
+        surname:
+          type: string
+          example: Tsarenko
+        phoneNumber:
+          type: string
+          example: "+79221110500"
+        role:
+          type: string
+          example: EXECUTOR
     UserDataWithJwt:
       type: object
       properties:
@@ -649,7 +691,7 @@ components:
               example: "+79221110500"
             role:
               type: string
-              example: executor
+              example: EXECUTOR
         jwt:
           type: string
     UserSettings:

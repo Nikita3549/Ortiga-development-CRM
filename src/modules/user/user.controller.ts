@@ -3,6 +3,7 @@ import {
 	Body,
 	Controller,
 	Get,
+	NotFoundException,
 	Param,
 	Post,
 	Put,
@@ -22,6 +23,7 @@ import { TokenService } from '../token/token.service';
 import { Express, Response } from 'express';
 import {
 	AVATAR_UPDATED_SUCCESSFUL,
+	INCORRECT_USER_ID,
 	UNSUPPORTED_FILE_EXTENSION,
 } from './constants';
 import { UploadAvatarInterceptor } from '../../interceptors/upload-avatar/upload-avatar.interceptor';
@@ -38,6 +40,17 @@ export class UserController {
 	@Get()
 	async getUsers(): Promise<IPublicUserData[]> {
 		return this.userService.getPublicUsers();
+	}
+
+	@Get(':id')
+	async getUser(@Param('id') id: string): Promise<IPublicUserData> {
+		const user = await this.userService.getUserById(id);
+
+		if (!user) {
+			throw new NotFoundException(INCORRECT_USER_ID);
+		}
+
+		return user;
 	}
 
 	@Put('update')
