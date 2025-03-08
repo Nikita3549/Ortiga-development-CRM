@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { IPublicUserData } from './interfaces/publicUserData.interface';
 import { IPublicUserDataWithJwt } from '../auth/interfaces/publicUserDataWithJwt.interface';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../../guards/jwtAuth.guard';
 import { UserService } from './user.service';
 import { AuthRequest } from '../../interfaces/AuthRequest.interface';
 import { UpdateUserDto } from './dto/update-user.dto';

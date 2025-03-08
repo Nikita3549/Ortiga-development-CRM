@@ -5,7 +5,7 @@ import { ConfigService } from '../config/config.service';
 
 @Injectable()
 export class TokenService {
-	private JWT_SECRET: string;
+	private readonly JWT_SECRET: string;
 
 	constructor(private readonly config: ConfigService) {
 		this.JWT_SECRET = this.config.get('JWT_SECRET');

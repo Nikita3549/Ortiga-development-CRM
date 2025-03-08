@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { IUserSettings } from './interfaces/IUserSettings.interface';
 import { SettingsService } from './settings.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../../guards/jwtAuth.guard';
 import { AuthRequest } from '../../interfaces/AuthRequest.interface';
 import { UserSettingsDto } from './dto/user-settings.dto';
 
