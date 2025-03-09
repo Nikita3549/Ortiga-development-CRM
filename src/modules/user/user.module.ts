@@ -5,7 +5,7 @@ import { UserController } from './user.controller';
 import { TokenModule } from '../token/token.module';
 
 @Module({
-	imports: [PrismaModule, TokenModule],
+	imports: [TokenModule],
 	providers: [UserService],
 	exports: [UserService],
 	controllers: [UserController],

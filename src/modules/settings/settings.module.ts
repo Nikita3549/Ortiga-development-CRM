@@ -4,7 +4,6 @@ import { SettingsService } from './settings.service';
 import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
-	imports: [PrismaModule],
 	controllers: [SettingsController],
 	providers: [SettingsService],
 })

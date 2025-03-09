@@ -644,9 +644,194 @@ paths:
                     error:
                       type: string
                       example: "Bad Request"
+    /projects:
+      get:
+        summary: Получить все проекты
+        security:
+          - bearerAuth: []
+        parameters:
+          - name: status
+            in: query
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [COMPLETED, CLOSED, IN_PROCESS]
+        responses:
+          '200':
+            description: Успешный ответ
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Project'
+
+    /projects/create:
+      post:
+        summary: Создать новый проект
+        security:
+          - bearerAuth: []
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: New Name
+                  description:
+                    type: string
+                    example: New Description
+        responses:
+          '201':
+            description: Проект создан
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Project'
+          '403':
+            description: Не админ
+
+    /projects/{id}:
+      get:
+        summary: Получить проект по ID
+        security:
+          - bearerAuth: []
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Успешный ответ
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Project'
+          '404':
+            description: Проект не найден
+
+      put:
+        summary: Обновить проект
+        security:
+          - bearerAuth: []
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: New Name
+                  description:
+                    type: string
+                    example: New Description
+        responses:
+          '200':
+            description: Проект обновлен
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Project'
+          '403':
+            description: Не админ
+          '404':
+            description: Проект не найден
+
+    /projects/{id}/complete:
+      patch:
+        summary: Завершить проект
+        security:
+          - bearerAuth: []
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Проект завершен
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Project'
+          '403':
+            description: Не админ
+          '400':
+            description: Есть незавершенные процессы
+
+    /projects/{id}/close:
+      patch:
+        summary: Закрыть проект
+        security:
+          - bearerAuth: []
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Проект закрыт
+          '403':
+            description: Не админ
+
+    /projects/{id}/reopen:
+      patch:
+        summary: Переоткрыть проект
+        security:
+          - bearerAuth: []
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Проект переоткрыт
+          '403':
+            description: Не админ
 
 components:
   schemas:
+    Project:
+      type: object
+      properties:
+        uuid:
+          type: string
+          example: 0a32478b-b48e-4988-8f05-c259614ff448
+        name:
+          type: string
+          example: Project Name
+        description:
+          type: string
+          example: Project Description
+        status:
+          type: string
+          enum: [DONE, IN_PROCESS, CLOSED]
+        createdBy:
+          type: string
+          example: userUuid
+        createdAt:
+          type: string
+          example: 2025-03-09T10:26:29.804Z
     IPublicUserData:
       type: object
       properties:
@@ -667,7 +852,7 @@ components:
           example: "+79221110500"
         role:
           type: string
-          example: EXECUTOR
+          enum: [EXECUTOR, CONTROLLER, ADMIN]
     UserDataWithJwt:
       type: object
       properties:
@@ -691,7 +876,7 @@ components:
               example: "+79221110500"
             role:
               type: string
-              example: EXECUTOR
+              enum: [EXECUTOR, CONTROLLER, ADMIN]
         jwt:
           type: string
     UserSettings:
@@ -714,7 +899,7 @@ components:
             example: "+79221110500"
           role:
             type: string
-            example: executor
+            enum: [EXECUTOR, CONTROLLER, ADMIN]
           email:
             type: string
             example: testemail@gmail.com

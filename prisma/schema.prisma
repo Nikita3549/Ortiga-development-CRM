@@ -19,9 +19,13 @@ model User {
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
-  settings   UserSettings[]
-  messages   Message[]
-  chatMember ChatMember[]
+  settings       UserSettings[]
+  messages       Message[]
+  chatMember     ChatMember[]
+  projects       Project[]
+  processes      Process[]
+  tasks          Task[]
+  executingTasks TaskExecutors[]
 
   @@map("users")
 }
@@ -95,4 +99,93 @@ enum ChatType {
   GROUP
 
   @@map("chat_types")
+}
+
+model Project {
+  uuid        String        @id @default(uuid())
+  name        String
+  description String
+  status      ProjectStatus @default(IN_PROCESS)
+  createdBy   String        @map("created_by")
+  createdAt   DateTime      @default(now()) @map("created_at")
+
+  processes Process[]
+  tasks     Task[]
+
+  creator_uuid User @relation(fields: [createdBy], references: [uuid])
+
+  @@map("projects")
+}
+
+enum ProjectStatus {
+  COMPLETED
+  CLOSED
+  IN_PROCESS
+}
+
+model Process {
+  uuid        String        @id @default(uuid())
+  project     String
+  name        String
+  status      ProcessStatus
+  description String
+  createdBy   String        @map("created_by")
+  createdAt   DateTime      @default(now()) @map("created_at")
+
+  tasks Task[]
+
+  creator_uuid User    @relation(fields: [createdBy], references: [uuid])
+  project_uuid Project @relation(fields: [project], references: [uuid])
+
+  @@map("processes")
+}
+
+enum ProcessStatus {
+  COMPLETED
+  CLOSED
+  IN_PROCESS
+}
+
+model Task {
+  uuid        String       @id @default(uuid())
+  process     String
+  project     String
+  name        String
+  description String
+  status      TaskStatus   @default(IN_PROCESS)
+  priority    TaskPriority
+  deadline    DateTime
+  createdBy   String       @map("created_by")
+  createdAt   DateTime     @default(now()) @map("created_at")
+
+  executingTasks TaskExecutors[]
+
+  creator_uuid User    @relation(fields: [createdBy], references: [uuid])
+  process_uuid Process @relation(fields: [process], references: [uuid], onDelete: Cascade)
+  project_uuid Project @relation(fields: [project], references: [uuid])
+}
+
+enum TaskStatus {
+  COMPLETED
+  CLOSED
+  IN_PROCESS
+  COMPLETED_LATE
+  IN_PROCESS_LATE
+}
+
+enum TaskPriority {
+  HIGH
+  LOW
+  IMMEDIATELY
+}
+
+model TaskExecutors {
+  executorUuid String @map("user_uuid")
+  taskUuid     String @map("task_uuid")
+
+  executor_uuid User @relation(fields: [executorUuid], references: [uuid])
+  task_uuid     Task @relation(fields: [taskUuid], references: [uuid], onDelete: Cascade)
+
+  @@id([executorUuid, taskUuid])
+  @@map("users_tasks")
 }

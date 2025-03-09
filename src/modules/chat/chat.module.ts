@@ -7,7 +7,7 @@ import { ChatController } from './chat.controller';
 import { RedisModule } from '../redis/redis.module';
 
 @Module({
-	imports: [TokenModule, PrismaModule, RedisModule],
+	imports: [TokenModule, RedisModule],
 	providers: [ChatGateway, ChatService],
 	controllers: [ChatController],
 })

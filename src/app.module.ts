@@ -10,6 +10,9 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { TokenModule } from './modules/token/token.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { ProjectsModule } from './modules/projects/projects.module';
+import { ProcessesModule } from './modules/processes/processes.module';
+import { TasksModule } from './modules/tasks/tasks.module';
 
 @Module({
 	imports: [
@@ -22,6 +25,9 @@ import { ChatModule } from './modules/chat/chat.module';
 		TokenModule,
 		SettingsModule,
 		ChatModule,
+		ProjectsModule,
+		ProcessesModule,
+		TasksModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],
