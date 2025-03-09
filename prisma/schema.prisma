@@ -127,7 +127,7 @@ model Process {
   uuid        String        @id @default(uuid())
   project     String
   name        String
-  status      ProcessStatus
+  status      ProcessStatus @default(IN_PROCESS)
   description String
   createdBy   String        @map("created_by")
   createdAt   DateTime      @default(now()) @map("created_at")

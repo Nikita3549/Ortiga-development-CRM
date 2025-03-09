@@ -11,6 +11,8 @@ paths:
     /auth/register:
       post:
         summary: Регистрация пользователя
+        tags:
+          - auth
         description: Регистрирует нового пользователя и отправляет код подтверждения на email.
         requestBody:
           required: true
@@ -54,6 +56,8 @@ paths:
 
     /auth/verify-register:
       post:
+        tags:
+          - auth
         summary: Подтверждение регистрации
         description: Проверяет код подтверждения и завершает регистрацию.
         requestBody:
@@ -111,6 +115,8 @@ paths:
 
     /auth/resend-code:
       post:
+        tags:
+          - auth
         summary: Повторная отправка кода
         description: Отправляет повторно код подтверждения на email.
         requestBody:
@@ -140,6 +146,8 @@ paths:
 
     /auth/login:
       post:
+        tags:
+          - auth
         summary: Авторизация пользователя
         description: Авторизует пользователя и возвращает JWT токен.
         requestBody:
@@ -196,6 +204,8 @@ paths:
 
     /auth/forgot-password:
       post:
+        tags:
+          - auth
         summary: Запрос на восстановление пароля
         description: Отправляет код восстановления на email пользователя.
         requestBody:
@@ -225,6 +235,8 @@ paths:
 
     /auth/verify-reset-password:
       post:
+        tags:
+          - auth
         summary: Проверка кода перед восстановлением пароля
         requestBody:
           required: true
@@ -255,6 +267,8 @@ paths:
 
     /auth/reset-password:
       post:
+        tags:
+          - auth
         summary: Смена пароля
         requestBody:
           required: true
@@ -288,6 +302,8 @@ paths:
             description: Неверный код или неверные данные
     /settings/update:
       put:
+        tags:
+          - settings
         summary: Изменение настроек
         description: Обновляет настройки пользователя.
         security:
@@ -306,6 +322,8 @@ paths:
 
     /settings:
       get:
+        tags:
+          - settings
         summary: Получение настроек
         description: Возвращает текущие настройки пользователя.
         security:
@@ -321,6 +339,8 @@ paths:
             description: Ошибка запроса
     /user:
       get:
+        tags:
+          - user
         summary: Получение всех пользователей
         description: Возвращает список пользователей.
         security:
@@ -336,6 +356,8 @@ paths:
                     $ref: "#/components/schemas/User"
     /user/{id}:
       get:
+        tags:
+          - user
         summary: Получить информацию о пользователе
         description: Возвращает публичные данные пользователя по его ID.
         security:
@@ -358,6 +380,8 @@ paths:
             description: Пользователь не найден
     /user/update:
         put:
+          tags:
+            - user
           summary: Изменение пользователя
           description: Обновляет данные о пользователе.
           security:
@@ -384,6 +408,8 @@ paths:
                     $ref: "#/components/schemas/UserDataWithJwt"
     /user/upload-avatar:
       post:
+        tags:
+          - user
         summary: Загрузка аватарки
         description: Загружает новую аватарку пользователя.
         security:
@@ -408,6 +434,8 @@ paths:
 
     /user/avatar/{userUuid}:
       get:
+        tags:
+          - user
         summary: Получение аватарки пользователя
         description: Возвращает аватарку пользователя по его ID.
         security:
@@ -427,6 +455,8 @@ paths:
               image/jpeg: { }
     /chat/all:
       get:
+        tags:
+          - chat
         summary: HTTP Получить все чаты пользователя с сообщениями
         description: Возвращает список чатов, в которых участвует пользователь, включая сообщения в каждом чате.
         security:
@@ -480,6 +510,8 @@ paths:
                       example: "Unauthorized"
     /chat:
       get:
+        tags:
+          - chat
         summary: WEBSOCKET Создание подключения
         description: 'Ивенты, которые приходят с сервера: 
         exception, message_receive, message_ack, new_chat, message_read, status_online, status_offline'
@@ -492,6 +524,8 @@ paths:
             description: Неверный токен
     new_chat:
       post:
+        tags:
+          - chat
         summary: WEBSOCKET Создание нового чата
         description: >
           Событие `new_chat` отправляется через WebSocket для создания нового чата с указанным пользователем.
@@ -532,6 +566,8 @@ paths:
                       example: "INVALID_CHAT_ID или INVALID_USER_ID"
     message_send:
       post:
+        tags:
+          - chat
         summary: WEBSOCKET Отправка сообщения
         description: >
           Событие `message_send` используется для отправки нового сообщения в чат.
@@ -576,6 +612,8 @@ paths:
                       example: "INVALID_CHAT_ID"
     message_read:
       post:
+        tags:
+          - chat
         summary: WEBSOCKET Подтверждение прочтения сообщения
         description: >
           Событие `message_read` отправляется для уведомления участников чата о прочтении сообщения.
@@ -619,6 +657,8 @@ paths:
                       example: "INVALID_MESSAGE_ID"
     status_follow:
       post:
+        tags:
+          - chat
         summary: WEBSOCKET Подписаться на статус пользователя
         description: Подписывает клиента на обновления статуса другого пользователя (онлайн/офлайн). Сразу возвращает ивент status_online/status_offline. А позже вызывает эти ивенты при изменении статуса.
         requestBody:
@@ -646,6 +686,8 @@ paths:
                       example: "Bad Request"
     /projects:
       get:
+        tags:
+          - projects
         summary: Получить все проекты
         security:
           - bearerAuth: []
@@ -670,6 +712,8 @@ paths:
 
     /projects/create:
       post:
+        tags:
+          - projects
         summary: Создать новый проект
         security:
           - bearerAuth: []
@@ -698,6 +742,8 @@ paths:
 
     /projects/{id}:
       get:
+        tags:
+          - projects
         summary: Получить проект по ID
         security:
           - bearerAuth: []
@@ -718,6 +764,8 @@ paths:
             description: Проект не найден
 
       put:
+        tags:
+          - projects
         summary: Обновить проект
         security:
           - bearerAuth: []
@@ -754,6 +802,8 @@ paths:
 
     /projects/{id}/complete:
       patch:
+        tags:
+          - projects
         summary: Завершить проект
         security:
           - bearerAuth: []
@@ -777,6 +827,8 @@ paths:
 
     /projects/{id}/close:
       patch:
+        tags:
+          - projects
         summary: Закрыть проект
         security:
           - bearerAuth: []
@@ -794,6 +846,8 @@ paths:
 
     /projects/{id}/reopen:
       patch:
+        tags:
+          - projects
         summary: Переоткрыть проект
         security:
           - bearerAuth: []
@@ -808,9 +862,220 @@ paths:
             description: Проект переоткрыт
           '403':
             description: Не админ
+    /processes/create:
+      post:
+
+        summary: Создать новый процесс
+        tags:
+          - processes
+        security:
+          - bearerAuth: [ ]
+        requestBody:
+          description: Данные для создания процесса
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: New name
+                  description:
+                    type: string
+                    example: New description
+                  projectUuid:
+                    type: string
+                    example: 3436d7a5-4717-4fcd-89cf-e6da0786dc82
+        responses:
+          '200':
+            description: Процесс успешно создан
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Process'
+          '404':
+            description: Неверный идентификатор проекта
+    /processes/update/{id}:
+      put:
+        summary: Обновить процесс
+        tags:
+          - processes
+        security:
+          - bearerAuth: [ ]
+        parameters:
+          - name: id
+            in: path
+            description: Идентификатор процесса
+            required: true
+            schema:
+              type: string
+        requestBody:
+          description: Данные для обновления процесса
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: New name
+                  description:
+                    type: string
+                    example: New description
+        responses:
+          '200':
+            description: Процесс успешно обновлён
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Process'
+          '404':
+            description: Неверный идентификатор процесса
+    /processes/{id}:
+      get:
+        summary: Получить процесс по идентификатору
+        tags:
+          - processes
+        parameters:
+          - name: id
+            in: path
+            description: Идентификатор процесса
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Информация о процессе
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Process'
+          '404':
+            description: Процесс не найден
+      delete:
+        summary: Удалить процесс
+        tags:
+          - processes
+        security:
+          - bearerAuth: [ ]
+        parameters:
+          - name: id
+            in: path
+            description: Идентификатор процесса
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Процесс успешно удалён
+          '404':
+            description: Процесс не найден
+    /processes:
+      get:
+        summary: Получить список процессов с опциональной фильтрацией по статусу
+        tags:
+          - processes
+        parameters:
+          - name: status
+            in: query
+            description: Фильтр по статусу процесса IN_PROCESS, COMPLETED, CLOSED
+            required: false
+            schema:
+              type: string
+              enum:
+                - IN_PROCESS
+                - COMPLETED
+                - CLOSED
+        responses:
+          '200':
+            description: Список процессов
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Process'
+    /processes/{id}/complete:
+      patch:
+        summary: Завершить процесс
+        tags:
+          - processes
+        security:
+          - bearerAuth: [ ]
+        parameters:
+          - name: id
+            in: path
+            description: Идентификатор процесса
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Процесс успешно завершён
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Process'
+          '403':
+            description: Необходимо завершить все задачи перед завершением процесса
+          '404':
+            description: Процесс не найден
+    /processes/{id}/progress:
+      get:
+        summary: Получить прогресс выполнения процесса
+        tags:
+          - processes
+        parameters:
+          - name: id
+            in: path
+            description: Идентификатор процесса
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Прогресс процесса
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    progress:
+                      type: number
+                      format: float
+                      description: Процент завершённых задач
+                      example: 75
+          '404':
+            description: Процесс не найден
 
 components:
   schemas:
+    Process:
+      type: object
+      properties:
+        uuid:
+          type: string
+          example: 431971f8-39e5-4776-962b-1449a6f57be7
+        project:
+          type: string
+          example: 3436d7a5-4717-4fcd-89cf-e6da0786dc82
+        name:
+          type: string
+          example: New name
+        status:
+          type: string
+          enum: [IN_PROCESS, COMPLETED, CLOSED]
+        description:
+          type: string
+          example: New description
+        createdBy:
+          type: string
+          example: 2002294e-371f-40da-b457-0e91b6002aa4
+        createdAt:
+          type: string
+          example: 2025-03-09T19:55:11.331Z
     Project:
       type: object
       properties:

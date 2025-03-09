@@ -32,4 +32,78 @@ export class ProcessesService {
 			where: status ? { status } : {},
 		});
 	}
+
+	async createProcess(
+		projectUuid: string,
+		name: string,
+		description: string,
+		userUuid: string,
+	): Promise<Process> {
+		return this.prisma.process.create({
+			data: {
+				project: projectUuid,
+				name,
+				description,
+				createdBy: userUuid,
+			},
+		});
+	}
+
+	async updateProcess(
+		name: string,
+		description: string,
+		processUuid: string,
+	): Promise<Process> {
+		return this.prisma.process.update({
+			data: {
+				name,
+				description,
+			},
+			where: {
+				uuid: processUuid,
+			},
+		});
+	}
+	async getProcessById(processUuid: string): Promise<Process | null> {
+		return this.prisma.process.findFirst({
+			where: {
+				uuid: processUuid,
+			},
+		});
+	}
+	async getProcessesByStatus(status?: ProcessStatus): Promise<Process[]> {
+		return this.prisma.process.findMany({
+			where: status ? { status } : {},
+		});
+	}
+
+	async deleteProcess(processUuid: string) {
+		return this.prisma.process.deleteMany({
+			where: {
+				uuid: processUuid,
+			},
+		});
+	}
+
+	async doesProcessExist(processUuid: string): Promise<boolean> {
+		return !!(await this.prisma.process.findFirst({
+			where: {
+				uuid: processUuid,
+			},
+		}));
+	}
+
+	async updateProcessStatus(
+		status: ProcessStatus,
+		processUuid: string,
+	): Promise<Process> {
+		return this.prisma.process.update({
+			data: {
+				status,
+			},
+			where: {
+				uuid: processUuid,
+			},
+		});
+	}
 }
