@@ -13,6 +13,7 @@ import { ChatModule } from './modules/chat/chat.module';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { ProcessesModule } from './modules/processes/processes.module';
 import { TasksModule } from './modules/tasks/tasks.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
 	imports: [
@@ -28,6 +29,7 @@ import { TasksModule } from './modules/tasks/tasks.module';
 		ProjectsModule,
 		ProcessesModule,
 		TasksModule,
+		ScheduleModule.forRoot(),
 	],
 	controllers: [AppController],
 	providers: [AppService],

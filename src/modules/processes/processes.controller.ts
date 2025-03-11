@@ -68,7 +68,6 @@ export class ProcessesController {
 
 	@Get(':id')
 	async getProcess(@Param('id') id: string): Promise<Process> {
-		console.log(id);
 		const process = await this.processesService.getProcessById(id);
 
 		if (!process) {

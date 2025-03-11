@@ -158,11 +158,13 @@ model Task {
   createdBy   String       @map("created_by")
   createdAt   DateTime     @default(now()) @map("created_at")
 
-  executingTasks TaskExecutors[]
+  executors TaskExecutors[]
 
   creator_uuid User    @relation(fields: [createdBy], references: [uuid])
   process_uuid Process @relation(fields: [process], references: [uuid], onDelete: Cascade)
   project_uuid Project @relation(fields: [project], references: [uuid])
+
+  @@map("tasks")
 }
 
 enum TaskStatus {
