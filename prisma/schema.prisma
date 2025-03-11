@@ -191,3 +191,13 @@ model TaskExecutors {
   @@id([executorUuid, taskUuid])
   @@map("users_tasks")
 }
+
+model AttachedMessage {
+  uuid String              @id @default(uuid())
+  type AttachedMessageType
+}
+
+enum AttachedMessageType {
+  TEXT
+  FILE
+}

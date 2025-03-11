@@ -864,14 +864,13 @@ paths:
             description: Не админ
     /processes/create:
       post:
-
         summary: Создать новый процесс
         tags:
           - processes
         security:
           - bearerAuth: [ ]
         requestBody:
-          description: Данные для создания процесса
+          description: Данные для создания процесса Доступно CONTROLLER или ADMIN
           required: true
           content:
             application/json:
@@ -906,7 +905,7 @@ paths:
         parameters:
           - name: id
             in: path
-            description: Идентификатор процесса
+            description: Идентификатор процесса Доступно CONTROLLER или ADMIN
             required: true
             schema:
               type: string
@@ -963,7 +962,7 @@ paths:
         parameters:
           - name: id
             in: path
-            description: Идентификатор процесса
+            description: Идентификатор процесса Доступно CONTROLLER или ADMIN
             required: true
             schema:
               type: string
@@ -1007,7 +1006,7 @@ paths:
         parameters:
           - name: id
             in: path
-            description: Идентификатор процесса
+            description: Идентификатор процесса Доступно CONTROLLER или ADMIN
             required: true
             schema:
               type: string
@@ -1049,9 +1048,333 @@ paths:
                       example: 75
           '404':
             description: Процесс не найден
+    /tasks/create:
+      post:
+        tags:
+          - tasks
+        summary: Создать новую задачу.
+        description: |
+          Создает новую задачу с указанными данными. Доступно CONTROLLER или ADMIN
+        security:
+          - bearerAuth: [ ]
+        requestBody:
+          description: Объект CreateTaskDto с данными задачи.
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  processUuid:
+                    type: string
+                    example: processUuid
+                  name:
+                    type: string
+                    example: new name
+                  description:
+                    type: string
+                    example: new description
+                  executorUuid:
+                    type: string
+                    example: executorUuid
+                  priority:
+                    type: string
+                    enum: [HIGH, LOW, IMMEDIATELY]
+                  deadline:
+                    type: string
+                    example: 2025-03-10T19:25:11.227Z
+                    description: ISO8601
+        responses:
+          '200':
+            description: Задача успешно создана.
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/TaskWithExecutors'
+          '404':
+            description: Процесс или исполнитель не найдены.
+    /tasks/update/{id}:
+      put:
+        tags:
+          - tasks
+        summary: Обновить задачу.
+        description: |
+          Обновляет задачу по указанному идентификатору. Доступно CONTROLLER или ADMIN
+        security:
+          - bearerAuth: [ ]
+        parameters:
+          - name: id
+            in: path
+            description: Уникальный идентификатор задачи.
+            required: true
+            schema:
+              type: string
+        requestBody:
+          description: Объект UpdateTaskDto с обновленными данными задачи.
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: new name
+                  description:
+                    type: string
+                    example: new description
+                  priority:
+                    type: string
+                    enum: [ HIGH, LOW, IMMEDIATELY ]
+                  deadline:
+                    type: string
+                    example: 2025-03-10T19:25:11.227Z
+                    description: ISO8601
+        responses:
+          '200':
+            description: Задача успешно обновлена.
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Task'
+          '404':
+            description: Задача не найдена.
+    /tasks/{id}:
+      get:
+        tags:
+          - tasks
+        summary: Получить задачу по ID.
+        description: Возвращает задачу по указанному ID.
+        security:
+          - bearerAuth: [ ]
+        parameters:
+          - name: id
+            in: path
+            description: Уникальный идентификатор задачи.
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Задача успешно получена.
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/TaskWithExecutors'
+          '404':
+            description: Задача не найдена.
+      delete:
+        tags:
+          - tasks
+        summary: Удалить задачу.
+        description: Удаляет задачу по указанному ID. Доступно CONTROLLER или ADMIN
+        security:
+          - bearerAuth: [ ]
+        parameters:
+          - name: id
+            in: path
+            description: Уникальный идентификатор задачи.
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Задача успешно удалена.
+          '404':
+            description: Задача не найдена.
+    /tasks:
+      get:
+        tags:
+          - tasks
+        summary: Получить задачи по идентификатору процесса.
+        description: |
+          Возвращает список задач, отфильтрованных по необязательному параметру processUuid.
+        security:
+          - bearerAuth: [ ]
+        parameters:
+          - name: processUuid
+            in: query
+            description: Опциональный идентификатор процесса.
+            required: false
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Список задач успешно получен.
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/TaskWithExecutors'
+    /tasks/{id}/complete:
+      patch:
+        tags:
+          - tasks
+        summary: Завершить задачу.
+        description: |
+          Меняет статус задачи на завершенный, если она еще не была завершена ранее. Доступно CONTROLLER или ADMIN
+        security:
+          - bearerAuth: [ ]
+        parameters:
+          - name: id
+            in: path
+            description: Уникальный идентификатор задачи.
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Задача успешно завершена.
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Task'
+          '404':
+            description: Задача не найдена.
+          '409':
+            description: Задача уже завершена.
+    /tasks/{taskUuid}/executor/{executorUuid}:
+      post:
+        tags:
+          - tasks
+        summary: Назначить исполнителя на задачу.
+        description: |
+          Добавляет исполнителя к указанной задаче, если он еще не назначен. Доступно CONTROLLER или ADMIN
+        security:
+          - bearerAuth: [ ]
+        parameters:
+          - name: taskUuid
+            in: path
+            description: Уникальный идентификатор задачи.
+            required: true
+            schema:
+              type: string
+          - name: executorUuid
+            in: path
+            description: Уникальный идентификатор исполнителя.
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Исполнитель успешно добавлен к задаче.
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/TaskExecutors'
+          '404':
+            description: Задача или исполнитель не найдены.
+          '409':
+            description: Исполнитель уже назначен на задачу.
+      delete:
+        tags:
+          - tasks
+        summary: Удалить исполнителя из задачи.
+        description: Удаляет указанного исполнителя из задачи. Доступно CONTROLLER или ADMIN
+        security:
+          - bearerAuth: [ ]
+        parameters:
+          - name: taskUuid
+            in: path
+            description: Уникальный идентификатор задачи.
+            required: true
+            schema:
+              type: string
+          - name: executorUuid
+            in: path
+            description: Уникальный идентификатор исполнителя.
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Исполнитель успешно удален из задачи.
+          '404':
+            description: Задача или исполнитель не найдены.
 
 components:
   schemas:
+    TaskWithExecutors:
+      type: object
+      properties:
+        uuid:
+          type: string
+          example: taskUuid
+        process:
+          type: string
+          example: processUuid
+        name:
+          type: string
+          example: task name
+        description:
+          type: string
+          example: task desc
+        status:
+          type: string
+          enum: [COMPLETED, CLOSED,IN_PROCESS, COMPLETED_LATE,IN_PROCESS_LATE]
+        priority:
+          type: string
+          enum: [HIGH, LOW, IMMEDIATELY]
+        deadline:
+          type: string
+          example: 2025-03-11T16:27:27.575Z
+        createdBy:
+          type: string
+          example: userUuid
+        createdAt:
+          type: string
+          example: 2025-03-11T16:27:27.575Z
+        executors:
+          type: array
+          items:
+            type: object
+            properties:
+              executorUuid:
+                type: string
+                example: userUuid
+              taskUuid:
+                type: string
+                example: taskUuid
+    Task:
+      type: object
+      properties:
+        uuid:
+          type: string
+          example: taskUuid
+        process:
+          type: string
+          example: processUuid
+        name:
+          type: string
+          example: task name
+        description:
+          type: string
+          example: task desc
+        status:
+          type: string
+          enum: [COMPLETED, CLOSED,IN_PROCESS, COMPLETED_LATE,IN_PROCESS_LATE]
+        priority:
+          type: string
+          enum: [HIGH, LOW, IMMEDIATELY]
+        deadline:
+          type: string
+          example: 2025-03-11T16:27:27.575Z
+        createdBy:
+          type: string
+          example: userUuid
+        createdAt:
+          type: string
+          example: 2025-03-11T16:27:27.575Z
+    TaskExecutors:
+      type: object
+      properties:
+        executorUuid:
+          type: string
+          example: uuid
+        taskUuid:
+          type: string
+          example: uuid
     Process:
       type: object
       properties:

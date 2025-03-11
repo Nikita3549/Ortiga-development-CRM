@@ -1,5 +1,5 @@
 import { TaskPriority } from '@prisma/client';
-import { IsDate, IsEnum, IsISO8601, IsString, IsUUID } from 'class-validator';
+import { IsEnum, IsISO8601, IsString, IsUUID } from 'class-validator';
 
 export class CreateTaskDto {
 	@IsUUID()

@@ -1,5 +1,5 @@
 import { Task, TaskExecutors } from '@prisma/client';
 
-export interface ITaskWithExecutors extends Task{
-	executors: TaskExecutors[]
+export interface ITaskWithExecutors extends Task {
+	executors: TaskExecutors[];
 }

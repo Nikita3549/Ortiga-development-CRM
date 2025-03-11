@@ -9,7 +9,6 @@ import {
 } from '@prisma/client';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ITaskWithExecutors } from './interfaces/taskWithExecutors.interface';
-import * as process from 'node:process';
 
 @Injectable()
 export class TasksService {
