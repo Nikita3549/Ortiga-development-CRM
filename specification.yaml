@@ -1463,9 +1463,119 @@ paths:
             description: Доступ запрещен (только администраторы могут обновлять роли)
           "404":
             description: Пользователь не найден
+    /search:
+      get:
+        tags:
+          - search
+        summary: Установление WebSocket-соединения.
+        description: Подключение к WebSocket для использования поиска. Требуется передать токен авторизации.
+        security:
+          - bearerAuth: [ ]
+        responses:
+          "200":
+            description: Успешное установление WebSocket-соединения.
+          "401":
+            description: Неверный или отсутствующий токен.
+    projects_find:
+      post:
+        tags:
+          - search
+        summary: Поиск проектов по содержимому.
+        requestBody:
+          description: Данные запроса, содержащие поисковый текст. Возвращает событие projects_receive
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FindDto'
+        responses:
+          "200":
+            description: Список проектов, соответствующих критериям поиска.
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    type: object
+                    description: Объект проекта.
+    processes_find:
+      post:
+        tags:
+          - search
+        summary: Поиск процессов по содержимому.
+        requestBody:
+          description: Данные запроса, содержащие поисковый текст. Возвращает событие processes_receive
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FindDto'
+        responses:
+          "200":
+            description: Список процессов, соответствующих критериям поиска.
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    type: object
+                    description: Объект процесса.
+    tasks_find:
+      post:
+        tags:
+          - search
+        summary: Поиск задач по содержимому.
+        requestBody:
+          description: Данные запроса, содержащие поисковый текст. Возвращает событие tasks_receive
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FindDto'
+        responses:
+          "200":
+            description: Список задач, соответствующих критериям поиска.
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    type: object
+                    description: Объект задачи.
+    users_find:
+      post:
+        tags:
+          - search
+        summary: Поиск пользователей по содержимому.
+        requestBody:
+          description: Данные запроса, содержащие поисковый текст. Возвращает событие users_receive
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FindDto'
+        responses:
+          "200":
+            description: Список пользователей, соответствующих критериям поиска.
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    type: object
+                    description: Объект пользователя.
+
 
 components:
   schemas:
+    FindDto:
+      type: object
+      properties:
+        content:
+          type: string
+          description: Текст поискового запроса.
+      required:
+        - content
     AttachMessageDto:
       type: object
       properties:

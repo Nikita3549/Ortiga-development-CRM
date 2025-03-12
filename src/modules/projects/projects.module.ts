@@ -8,5 +8,6 @@ import { ProcessesModule } from '../processes/processes.module';
 	imports: [TasksModule, ProcessesModule],
 	controllers: [ProjectsController],
 	providers: [ProjectsService],
+	exports: [ProjectsService],
 })
 export class ProjectsModule {}

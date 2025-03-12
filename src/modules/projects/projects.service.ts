@@ -59,4 +59,15 @@ export class ProjectsService {
 			},
 		});
 	}
+
+	async searchProject(query: string): Promise<Project[]> {
+		return this.prisma.project.findMany({
+			where: {
+				name: {
+					contains: query,
+					mode: 'insensitive',
+				},
+			},
+		});
+	}
 }

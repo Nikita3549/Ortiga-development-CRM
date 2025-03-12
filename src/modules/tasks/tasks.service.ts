@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import {
 	AttachedMessage,
 	AttachedMessageType,
+	Project,
 	ProjectStatus,
 	Task,
 	TaskExecutors,
@@ -283,6 +284,17 @@ export class TasksService {
 		return this.prisma.attachedMessage.findMany({
 			where: {
 				taskUuid,
+			},
+		});
+	}
+
+	async searchTask(query: string): Promise<Task[]> {
+		return this.prisma.task.findMany({
+			where: {
+				name: {
+					contains: query,
+					mode: 'insensitive',
+				},
 			},
 		});
 	}

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Process, ProcessStatus, ProjectStatus } from '@prisma/client';
+import { Process, ProcessStatus, ProjectStatus, Task } from '@prisma/client';
 
 @Injectable()
 export class ProcessesService {
@@ -103,6 +103,17 @@ export class ProcessesService {
 			},
 			where: {
 				uuid: processUuid,
+			},
+		});
+	}
+
+	async searchProcess(query: string): Promise<Process[]> {
+		return this.prisma.process.findMany({
+			where: {
+				name: {
+					contains: query,
+					mode: 'insensitive',
+				},
 			},
 		});
 	}

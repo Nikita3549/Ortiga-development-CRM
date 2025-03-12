@@ -14,6 +14,7 @@ import { ProjectsModule } from './modules/projects/projects.module';
 import { ProcessesModule } from './modules/processes/processes.module';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { SearchModule } from './modules/search/search.module';
 
 @Module({
 	imports: [
@@ -30,6 +31,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 		ProcessesModule,
 		TasksModule,
 		ScheduleModule.forRoot(),
+		SearchModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],

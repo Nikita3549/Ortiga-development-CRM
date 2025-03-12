@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Role, User } from '@prisma/client';
+import { Role, Task, User } from '@prisma/client';
 import { ISaveUserData } from './interfaces/saveUserData.interface';
 import { IPublicUserData } from './interfaces/publicUserData.interface';
 import { IUpdateData } from './interfaces/update-data.interface';
@@ -120,6 +120,16 @@ export class UserService {
 			},
 			where: {
 				uuid: userUuid,
+			},
+		});
+	}
+	async searchUser(query: string): Promise<User[]> {
+		return this.prisma.user.findMany({
+			where: {
+				OR: [
+					{ name: { contains: query, mode: 'insensitive' } },
+					{ surname: { contains: query, mode: 'insensitive' } },
+				],
 			},
 		});
 	}
