@@ -6,7 +6,7 @@ import {
 	FORGOT_PASSWORD_CODE_TTL,
 	REDIS_REGISTER_DATA_KEY_POSTFIX,
 	REDIS_RESET_PASSWORD_CODE_KEY_POSTFIX,
-} from './auth.constants';
+} from './constants';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()

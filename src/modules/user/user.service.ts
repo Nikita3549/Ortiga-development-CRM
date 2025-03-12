@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { User } from '@prisma/client';
+import { Role, User } from '@prisma/client';
 import { ISaveUserData } from './interfaces/saveUserData.interface';
 import { IPublicUserData } from './interfaces/publicUserData.interface';
 import { IUpdateData } from './interfaces/update-data.interface';
@@ -111,5 +111,16 @@ export class UserService {
 		});
 
 		return data ? data.avatarPath : null;
+	}
+
+	async updateRole(newRole: Role, userUuid: string): Promise<User> {
+		return this.prisma.user.update({
+			data: {
+				role: newRole,
+			},
+			where: {
+				uuid: userUuid,
+			},
+		});
 	}
 }

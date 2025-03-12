@@ -1427,6 +1427,42 @@ paths:
                   $ref: '#/components/schemas/AttachedMessage'
           '404':
             description: Сообщение не найдено.
+    /update/role:
+      put:
+        summary: Обновление роли пользователя
+        description: Обновляет роль пользователя. Доступно только администраторам.
+        tags:
+          - auth
+        security:
+          - bearerAuth: [ ]
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - userUuid
+                  - newRole
+                properties:
+                  userUuid:
+                    type: string
+                    format: uuid
+                    example: "550e8400-e29b-41d4-a716-446655440000"
+                  newRole:
+                    type: string
+                    enum: [EXECUTOR, CONTROLLER, ADMIN]
+        responses:
+          "200":
+            description: Роль пользователя успешно обновлена
+          "400":
+            description: Неверный формат запроса
+          "401":
+            description: Неавторизованный доступ
+          "403":
+            description: Доступ запрещен (только администраторы могут обновлять роли)
+          "404":
+            description: Пользователь не найден
 
 components:
   schemas:

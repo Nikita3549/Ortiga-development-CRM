@@ -30,3 +30,5 @@ export const CODE_IS_WRONG_OR_EXPIRED = 'Code is wrong or expired';
 export const CORRECT_CODE = 'Code is correct';
 
 export const PASSWORD_WAS_CHANGED_SUCCESS = 'Password was changed successful';
+
+export const INVALID_USER_ID = 'Invalid user uuid';

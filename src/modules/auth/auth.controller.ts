@@ -7,6 +7,9 @@ import {
 	HttpCode,
 	HttpStatus,
 	Post,
+	Put,
+	UseGuards,
+	NotFoundException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -18,12 +21,13 @@ import {
 	CONFIRM_REGISTRATION_SUCCESS,
 	CORRECT_CODE,
 	EXPIRE_CODE_OR_WRONG_EMAIL_ERROR,
+	INVALID_USER_ID,
 	PASSWORD_WAS_CHANGED_SUCCESS,
 	SEND_FORGOT_PASSWORD_CODE_SUCCESS,
 	WRONG_CODE_ERROR,
 	WRONG_EMAIL,
 	WRONG_EMAIL_OR_PASSWORD,
-} from './auth.constants';
+} from './constants';
 import { NotificationsService } from '../notifications/notifications.service';
 import { VerifyRegisterDto } from './dto/verify-register.dto';
 import { TokenService } from '../token/token.service';
@@ -33,6 +37,9 @@ import { LoginDto } from './dto/login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { VerifyResetPasswordDto } from './dto/verify-reset-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { IsAdminGuard } from '../../guards/isAdmin.guard';
+import { UpdateRoleDto } from './dto/update-role.dto';
+import { JwtAuthGuard } from '../../guards/jwtAuth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -235,5 +242,17 @@ export class AuthController {
 		if (code != +compareCode) {
 			throw new BadRequestException(CODE_IS_WRONG_OR_EXPIRED);
 		}
+	}
+
+	@Put('/update/role')
+	@UseGuards(JwtAuthGuard, IsAdminGuard)
+	async updateRole(@Body() dto: UpdateRoleDto) {
+		const { userUuid, newRole } = dto;
+
+		if (!(await this.userService.getUserById(userUuid))) {
+			throw new NotFoundException(INVALID_USER_ID);
+		}
+
+		await this.userService.updateRole(newRole, userUuid);
 	}
 }
