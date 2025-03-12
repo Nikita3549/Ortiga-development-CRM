@@ -11,17 +11,28 @@ import {
 	Put,
 	Query,
 	Req,
+	Res,
+	UploadedFile,
 	UseGuards,
+	UseInterceptors,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../guards/jwtAuth.guard';
 import { IsControllerGuard } from '../../guards/isController.guard';
-import { Role, Task, TaskExecutors, TaskStatus } from '@prisma/client';
+import {
+	AttachedMessage,
+	AttachedMessageType,
+	Role,
+	Task,
+	TaskExecutors,
+	TaskStatus,
+} from '@prisma/client';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { TasksService } from './tasks.service';
 import { ProcessesService } from '../processes/processes.service';
 import {
 	EXECUTOR_ALREADY_ASSIGNED,
 	INVALID_EXECUTOR,
+	INVALID_FILE_ID,
 	INVALID_PROCESS_ID,
 	INVALID_TASK_ID,
 	TASK_ALREADY_COMPLETED,
@@ -30,6 +41,10 @@ import { UserService } from '../user/user.service';
 import { AuthRequest } from '../../interfaces/AuthRequest.interface';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { ITaskWithExecutors } from './interfaces/taskWithExecutors.interface';
+import { AttachMessageDto } from './dto/attach-message.dto';
+import { AttachFileInterceptor } from './interceptors/attach-file.interceptor';
+import { Express, Response } from 'express';
+import { join } from 'path';
 
 @Controller('tasks')
 @UseGuards(JwtAuthGuard)
@@ -191,5 +206,79 @@ export class TasksController {
 		}
 
 		await this.taskService.deleteExecutor(taskUuid, executorUuid);
+	}
+	@Post('/:taskUuid/attach/message')
+	async attachMessage(
+		@Param('taskUuid') taskUuid: string,
+		@Body() dto: AttachMessageDto,
+		@Req() req: AuthRequest,
+	): Promise<AttachedMessage> {
+		const { content } = dto;
+
+		if (!(await this.taskService.doesTaskExist(taskUuid))) {
+			throw new NotFoundException(INVALID_TASK_ID);
+		}
+
+		return this.taskService.attachMessage(content, req.user.uuid, taskUuid);
+	}
+
+	@Post('/:taskUuid/attach/file')
+	@UseInterceptors(new AttachFileInterceptor())
+	async attachFile(
+		@Param('taskUuid') taskUuid: string,
+		@UploadedFile() file: Express.Multer.File,
+		@Req() req: AuthRequest,
+	): Promise<AttachedMessage> {
+		const content = file.filename;
+		console.log(content);
+
+		if (!(await this.taskService.doesTaskExist(taskUuid))) {
+			throw new NotFoundException(INVALID_TASK_ID);
+		}
+
+		return this.taskService.attachFile(content, req.user.uuid, taskUuid);
+	}
+
+	@Get('/attach/file/:fileUuid')
+	async getAttachedFile(
+		@Param('fileUuid') fileUuid: string,
+		@Res() res: Response,
+	) {
+		const attachedFile =
+			await this.taskService.getAttachedFileById(fileUuid);
+
+		if (!attachedFile || attachedFile.type != AttachedMessageType.FILE) {
+			throw new NotFoundException(INVALID_FILE_ID);
+		}
+
+		res.sendFile(
+			join(__dirname, `../../../attachedFiles/${attachedFile.content}`),
+		);
+	}
+
+	@Get('/attach/message/:messageUuid')
+	async getAttachedMessage(
+		@Param('messageUuid') messageUuid: string,
+	): Promise<AttachedMessage> {
+		const attachedMessage =
+			await this.taskService.getAttachedFileById(messageUuid);
+
+		if (!attachedMessage) {
+			throw new NotFoundException(INVALID_FILE_ID);
+		}
+
+		return attachedMessage;
+	}
+	@Get('/:taskUuid/attach/message')
+	async getAttachedMessages(
+		@Param('taskUuid') taskUuid: string,
+	): Promise<AttachedMessage[]> {
+		const task = await this.taskService.getTaskById(taskUuid);
+
+		if (!task) {
+			throw new NotFoundException(INVALID_TASK_ID);
+		}
+
+		return this.taskService.getAllAttachedFilesByTaskUuid(taskUuid);
 	}
 }

@@ -7,3 +7,5 @@ export const INVALID_TASK_ID = 'Invalid task uuid';
 export const TASK_ALREADY_COMPLETED = 'Task already completed';
 
 export const EXECUTOR_ALREADY_ASSIGNED = 'Executor already assigned';
+
+export const INVALID_FILE_ID = 'Invalid file uuid';

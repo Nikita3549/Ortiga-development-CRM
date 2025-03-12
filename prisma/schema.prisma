@@ -159,6 +159,7 @@ model Task {
   createdAt   DateTime     @default(now()) @map("created_at")
 
   executors TaskExecutors[]
+  attachedMessages AttachedMessage[]
 
   creator_uuid User    @relation(fields: [createdBy], references: [uuid])
   process_uuid Process @relation(fields: [process], references: [uuid], onDelete: Cascade)
@@ -193,8 +194,16 @@ model TaskExecutors {
 }
 
 model AttachedMessage {
-  uuid String              @id @default(uuid())
-  type AttachedMessageType
+  uuid      String              @id @default(uuid())
+  type      AttachedMessageType
+  taskUuid String
+  content   String
+  createdBy String
+  createdAt DateTime            @default(now()) @map("created_at")
+
+  task_uuid Task @relation(fields: [taskUuid], references: [uuid], onDelete: Cascade)
+
+  @@map("attached_messages")
 }
 
 enum AttachedMessageType {

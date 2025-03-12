@@ -1292,9 +1292,174 @@ paths:
             description: Исполнитель успешно удален из задачи.
           '404':
             description: Задача или исполнитель не найдены.
+    /tasks/{taskUuid}/attach/message:
+      post:
+        tags:
+          - tasks
+        summary: Прикрепить сообщение к задаче.
+        description: |
+          Прикрепляет текстовое сообщение к задаче. Проверяет существование задачи с указанным taskUuid.
+        security:
+          - bearerAuth: [ ]
+        parameters:
+          - name: taskUuid
+            in: path
+            description: Уникальный идентификатор задачи.
+            required: true
+            schema:
+              type: string
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttachMessageDto'
+        responses:
+          '200':
+            description: Сообщение успешно прикреплено к задаче.
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/AttachedMessage'
+          '404':
+            description: Задача не найдена.
+      get:
+        tags:
+          - tasks
+        summary: Получить все прикрепленные сообщения задачи.
+        description: Возвращает список всех прикрепленных сообщений для задачи с указанным taskUuid.
+        parameters:
+          - name: taskUuid
+            in: path
+            description: Уникальный идентификатор задачи.
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Список прикрепленных сообщений успешно получен.
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/AttachedMessage'
+          '404':
+            description: Задача не найдена.
+    /tasks/{taskUuid}/attach/file:
+      post:
+        tags:
+          - tasks
+        summary: Прикрепить файл к задаче.
+        description: |
+          Загружает файл и прикрепляет его к задаче. Проверяет, что задача с указанным taskUuid существует.
+        security:
+          - bearerAuth: [ ]
+        parameters:
+          - name: taskUuid
+            in: path
+            description: Уникальный идентификатор задачи.
+            required: true
+            schema:
+              type: string
+        requestBody:
+          description: Файл для прикрепления к задаче.
+          required: true
+          content:
+            multipart/form-data:
+              schema:
+                type: object
+                properties:
+                  file:
+                    type: string
+                    format: binary
+        responses:
+          '200':
+            description: Файл успешно прикреплен к задаче.
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/AttachedMessage'
+          '404':
+            description: Задача не найдена.
+    /tasks/attach/file/{fileUuid}:
+      get:
+        tags:
+          - tasks
+        summary: Получить прикрепленный файл.
+        description: Возвращает прикрепленный файл по его уникальному идентификатору.
+        parameters:
+          - name: fileUuid
+            in: path
+            description: Уникальный идентификатор файла.
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Файл успешно получен.
+            content:
+              application/octet-stream:
+                schema:
+                  type: string
+                  format: binary
+          '404':
+            description: Файл не найден или имеет неверный тип.
+    /tasks/attach/message/{messageUuid}:
+      get:
+        tags:
+          - tasks
+        summary: Получить прикрепленное сообщение.
+        description: Возвращает прикрепленное сообщение по его уникальному идентификатору.
+        parameters:
+          - name: messageUuid
+            in: path
+            description: Уникальный идентификатор сообщения.
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Прикрепленное сообщение успешно получено.
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/AttachedMessage'
+          '404':
+            description: Сообщение не найдено.
 
 components:
   schemas:
+    AttachMessageDto:
+      type: object
+      properties:
+        content:
+          type: string
+          description: Текст сообщения.
+    AttachedMessage:
+      type: object
+      properties:
+        id:
+          type: string
+          description: uuid.
+        content:
+          type: string
+          description: Содержимое сообщения или имя файла.
+        createdBy:
+          type: string
+          description: userUuid
+        taskUuid:
+          type: string
+          description: taskUuid
+        type:
+          type: string
+          enum:
+            - FILE
+            - MESSAGE
+        createdAt:
+          type: string
+          format: date-time
+          description: Дата и время создания прикрепленного объекта.
     TaskWithExecutors:
       type: object
       properties:

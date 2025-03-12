@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
+	AttachedMessage,
+	AttachedMessageType,
 	ProjectStatus,
 	Task,
 	TaskExecutors,
@@ -233,5 +235,55 @@ export class TasksService {
 				});
 			}
 		}
+	}
+
+	async attachMessage(
+		content: string,
+		userUuid: string,
+		taskUuid: string,
+	): Promise<AttachedMessage> {
+		return this.prisma.attachedMessage.create({
+			data: {
+				type: AttachedMessageType.TEXT,
+				content,
+				createdBy: userUuid,
+				taskUuid,
+			},
+		});
+	}
+
+	async attachFile(
+		fileName: string,
+		userUuid: string,
+		taskUuid: string,
+	): Promise<AttachedMessage> {
+		return this.prisma.attachedMessage.create({
+			data: {
+				type: AttachedMessageType.FILE,
+				content: fileName,
+				createdBy: userUuid,
+				taskUuid,
+			},
+		});
+	}
+
+	async getAttachedFileById(
+		fileUuid: string,
+	): Promise<AttachedMessage | null> {
+		return this.prisma.attachedMessage.findFirst({
+			where: {
+				uuid: fileUuid,
+			},
+		});
+	}
+
+	async getAllAttachedFilesByTaskUuid(
+		taskUuid: string,
+	): Promise<AttachedMessage[]> {
+		return this.prisma.attachedMessage.findMany({
+			where: {
+				taskUuid,
+			},
+		});
 	}
 }
