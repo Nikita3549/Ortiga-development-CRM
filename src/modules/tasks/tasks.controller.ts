@@ -31,6 +31,7 @@ import { TasksService } from './tasks.service';
 import { ProcessesService } from '../processes/processes.service';
 import {
 	EXECUTOR_ALREADY_ASSIGNED,
+	INVALID_CONTROLLER,
 	INVALID_EXECUTOR,
 	INVALID_FILE_ID,
 	INVALID_PROCESS_ID,
@@ -45,6 +46,35 @@ import { AttachMessageDto } from './dto/attach-message.dto';
 import { AttachFileInterceptor } from './interceptors/attach-file.interceptor';
 import { Express, Response } from 'express';
 import { join } from 'path';
+import { NotificationsGateway } from '../notifications/notifications.gateway';
+import {
+	ASSIGN_TO_TASK_TO_EXECUTOR_TITLE,
+	ATTACH_FILE_TO_ADMINS_TITLE,
+	ATTACH_FILE_TO_CONTROLLER_TITLE,
+	ATTACH_FILE_TO_EXECUTORS_TITLE,
+	ATTACH_MESSAGE_TO_ADMINS_TITLE,
+	ATTACH_MESSAGE_TO_CONTROLLER_TITLE,
+	ATTACH_MESSAGE_TO_EXECUTORS_TITLE,
+	COMPLETE_TASK_TO_ADMINS_TITLE,
+	COMPLETE_TASK_TO_CONTROLLER_TITLE,
+	COMPLETE_TASK_TO_EXECUTORS_TITLE,
+	NEW_TASK_TO_ADMINS_TITLE,
+	NEW_TASK_TO_CONTROLLER_TITLE,
+} from '../notifications/constants/notification.titles';
+import {
+	ASSIGN_TO_TASK_TO_EXECUTOR_CONTENT,
+	ATTACH_FILE_TO_ADMINS_CONTENT,
+	ATTACH_FILE_TO_CONTROLLER_CONTENT,
+	ATTACH_FILE_TO_EXECUTORS_CONTENT,
+	ATTACH_MESSAGE_TO_ADMINS_CONTENT,
+	ATTACH_MESSAGE_TO_CONTROLLER_CONTENT,
+	ATTACH_MESSAGE_TO_EXECUTORS_CONTENT,
+	COMPLETE_TASK_TO_ADMINS_CONTENT,
+	COMPLETE_TASK_TO_CONTROLLER_CONTENT,
+	COMPLETE_TASK_TO_EXECUTORS_CONTENT,
+	NEW_TASK_TO_ADMINS_CONTENT,
+	NEW_TASK_TO_CONTROLLER_CONTENT,
+} from '../notifications/constants/notifications.content';
 
 @Controller('tasks')
 @UseGuards(JwtAuthGuard)
@@ -53,6 +83,7 @@ export class TasksController {
 		private readonly taskService: TasksService,
 		private readonly processesService: ProcessesService,
 		private readonly userService: UserService,
+		private readonly notifications: NotificationsGateway,
 	) {}
 
 	@Post('create')
@@ -68,7 +99,14 @@ export class TasksController {
 			processUuid,
 			executorUuid,
 			description,
+			controllerUuid,
 		} = dto;
+
+		const controller = await this.userService.getUserById(controllerUuid);
+
+		if (!controller || controller.role != Role.CONTROLLER) {
+			throw new NotFoundException(INVALID_CONTROLLER);
+		}
 
 		const deadlineObj = new Date(deadline);
 
@@ -84,16 +122,38 @@ export class TasksController {
 			throw new NotFoundException(INVALID_EXECUTOR);
 		}
 
-		return this.taskService.createTask(
+		const task = await this.taskService.createTask(
 			name,
 			description,
 			deadlineObj,
 			priority,
-			req.user.uuid,
+			controllerUuid,
 			process.project,
 			processUuid,
 			executorUuid,
 		);
+
+		if (req.user.role != Role.ADMIN) {
+			await this.notifications.sendNotificationToAllByRoles(
+				NEW_TASK_TO_ADMINS_TITLE,
+				NEW_TASK_TO_ADMINS_CONTENT(name),
+				Role.ADMIN,
+			);
+		}
+
+		await this.notifications.sendNotification(
+			NEW_TASK_TO_CONTROLLER_TITLE,
+			NEW_TASK_TO_CONTROLLER_CONTENT(task.name),
+			controllerUuid,
+		);
+
+		await this.notifications.sendNotification(
+			ASSIGN_TO_TASK_TO_EXECUTOR_TITLE,
+			ASSIGN_TO_TASK_TO_EXECUTOR_CONTENT(task.name),
+			task.executors[0].executorUuid,
+		);
+
+		return task;
 	}
 
 	@Put('/update/:id')
@@ -143,7 +203,10 @@ export class TasksController {
 
 	@Patch('/:id/complete')
 	@UseGuards(IsControllerGuard)
-	async completeTask(@Param('id') id: string): Promise<Task> {
+	async completeTask(
+		@Param('id') id: string,
+		@Req() req: AuthRequest,
+	): Promise<Task> {
 		const task = await this.taskService.getTaskById(id);
 
 		if (!task) {
@@ -161,7 +224,34 @@ export class TasksController {
 			throw new ConflictException(TASK_ALREADY_COMPLETED);
 		}
 
-		return this.taskService.updateTaskStatus(newTaskStatus, id);
+		const updatedTask = await this.taskService.updateTaskStatus(
+			newTaskStatus,
+			id,
+		);
+
+		if (req.user.role != Role.ADMIN) {
+			await this.notifications.sendNotificationToAllByRoles(
+				COMPLETE_TASK_TO_ADMINS_TITLE,
+				COMPLETE_TASK_TO_ADMINS_CONTENT(updatedTask.name),
+				Role.ADMIN,
+			);
+		}
+
+		await this.notifications.sendNotification(
+			COMPLETE_TASK_TO_CONTROLLER_TITLE,
+			COMPLETE_TASK_TO_CONTROLLER_CONTENT(task.name),
+			task.createdBy,
+		);
+
+		for (let i = 0; i < task.executors.length; i++) {
+			await this.notifications.sendNotification(
+				COMPLETE_TASK_TO_EXECUTORS_TITLE,
+				COMPLETE_TASK_TO_EXECUTORS_CONTENT(task.name),
+				task.executors[i].executorUuid,
+			);
+		}
+
+		return updatedTask;
 	}
 
 	@Post('/:taskUuid/executor/:executorUuid')
@@ -184,6 +274,12 @@ export class TasksController {
 		if (await this.taskService.getExecutor(taskUuid, executorUuid)) {
 			throw new ConflictException(EXECUTOR_ALREADY_ASSIGNED);
 		}
+
+		await this.notifications.sendNotification(
+			ASSIGN_TO_TASK_TO_EXECUTOR_TITLE,
+			ASSIGN_TO_TASK_TO_EXECUTOR_CONTENT(task.name),
+			executor.uuid,
+		);
 
 		return this.taskService.createExecutor(taskUuid, executorUuid);
 	}
@@ -215,8 +311,32 @@ export class TasksController {
 	): Promise<AttachedMessage> {
 		const { content } = dto;
 
-		if (!(await this.taskService.doesTaskExist(taskUuid))) {
+		const task = await this.taskService.getTaskById(taskUuid);
+
+		if (!task) {
 			throw new NotFoundException(INVALID_TASK_ID);
+		}
+
+		if (req.user.role != Role.ADMIN) {
+			await this.notifications.sendNotificationToAllByRoles(
+				ATTACH_MESSAGE_TO_ADMINS_TITLE,
+				ATTACH_MESSAGE_TO_ADMINS_CONTENT(task.name),
+				Role.ADMIN,
+			);
+		}
+
+		await this.notifications.sendNotification(
+			ATTACH_MESSAGE_TO_CONTROLLER_TITLE,
+			ATTACH_MESSAGE_TO_CONTROLLER_CONTENT(task.name),
+			task.createdBy,
+		);
+
+		for (let i = 0; i < task.executors.length; i++) {
+			await this.notifications.sendNotification(
+				ATTACH_MESSAGE_TO_EXECUTORS_TITLE,
+				ATTACH_MESSAGE_TO_EXECUTORS_CONTENT(task.name),
+				task.executors[i].executorUuid,
+			);
 		}
 
 		return this.taskService.attachMessage(content, req.user.uuid, taskUuid);
@@ -230,10 +350,33 @@ export class TasksController {
 		@Req() req: AuthRequest,
 	): Promise<AttachedMessage> {
 		const content = file.filename;
-		console.log(content);
 
-		if (!(await this.taskService.doesTaskExist(taskUuid))) {
+		const task = await this.taskService.getTaskById(taskUuid);
+
+		if (!task) {
 			throw new NotFoundException(INVALID_TASK_ID);
+		}
+
+		if (req.user.role != Role.ADMIN) {
+			await this.notifications.sendNotificationToAllByRoles(
+				ATTACH_FILE_TO_ADMINS_TITLE,
+				ATTACH_FILE_TO_ADMINS_CONTENT(task.name),
+				Role.ADMIN,
+			);
+		}
+
+		await this.notifications.sendNotification(
+			ATTACH_FILE_TO_CONTROLLER_TITLE,
+			ATTACH_FILE_TO_CONTROLLER_CONTENT(task.name),
+			task.createdBy,
+		);
+
+		for (let i = 0; i < task.executors.length; i++) {
+			await this.notifications.sendNotification(
+				ATTACH_FILE_TO_EXECUTORS_TITLE,
+				ATTACH_FILE_TO_EXECUTORS_CONTENT(task.name),
+				task.executors[i].executorUuid,
+			);
 		}
 
 		return this.taskService.attachFile(content, req.user.uuid, taskUuid);

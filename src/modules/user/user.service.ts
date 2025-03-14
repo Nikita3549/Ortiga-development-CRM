@@ -133,4 +133,12 @@ export class UserService {
 			},
 		});
 	}
+
+	async getUsersByRole(role: Role) {
+		return this.prisma.user.findMany({
+			where: {
+				role,
+			},
+		});
+	}
 }

@@ -7,3 +7,5 @@ export const REGISTER_SUBJECT_EMAIL = 'Register account';
 
 export const REGISTER_CODE_EMAIL = (code: number) =>
 	`Confirmation code: ${code}`;
+
+export const INVALID_NOTIFICATION_ID = 'Invalid notification uuid';

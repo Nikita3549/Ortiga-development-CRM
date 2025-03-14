@@ -5,6 +5,7 @@ import {
 	AttachedMessageType,
 	Project,
 	ProjectStatus,
+	Role,
 	Task,
 	TaskExecutors,
 	TaskPriority,
@@ -12,17 +13,31 @@ import {
 } from '@prisma/client';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ITaskWithExecutors } from './interfaces/taskWithExecutors.interface';
+import {
+	COMPLETE_TASK_TO_EXECUTORS_TITLE,
+	LATE_TASK_STATUS_TO_ADMINS_TITLE,
+	LATE_TASK_TO_EXECUTORS_TITLE,
+} from '../notifications/constants/notification.titles';
+import {
+	COMPLETE_TASK_TO_EXECUTORS_CONTENT,
+	LATE_TASK_STATUS_TO_ADMINS_CONTENT,
+	LATE_TASK_TO_EXECUTORS_CONTENT,
+} from '../notifications/constants/notifications.content';
+import { NotificationsGateway } from '../notifications/notifications.gateway';
 
 @Injectable()
 export class TasksService {
-	constructor(private readonly prisma: PrismaService) {}
+	constructor(
+		private readonly prisma: PrismaService,
+		private readonly notifications: NotificationsGateway,
+	) {}
 
 	async createTask(
 		name: string,
 		description: string,
 		deadline: Date,
 		priority: TaskPriority,
-		createdBy: string,
+		userUuid: string,
 		projectUuid: string,
 		processUuid: string,
 		executorUuid: string,
@@ -33,7 +48,7 @@ export class TasksService {
 				description,
 				deadline,
 				priority,
-				createdBy,
+				createdBy: userUuid,
 				project: projectUuid,
 				process: processUuid,
 				executors: {
@@ -226,14 +241,31 @@ export class TasksService {
 
 		for (const task of lateTasks) {
 			if (task.status == TaskStatus.IN_PROCESS) {
-				await this.prisma.task.update({
+				const updatedTask = await this.prisma.task.update({
 					data: {
 						status: TaskStatus.IN_PROCESS_LATE,
 					},
 					where: {
 						uuid: task.uuid,
 					},
+					include: {
+						executors: true,
+					},
 				});
+
+				await this.notifications.sendNotificationToAllByRoles(
+					LATE_TASK_STATUS_TO_ADMINS_TITLE,
+					LATE_TASK_STATUS_TO_ADMINS_CONTENT(task.name),
+					Role.ADMIN,
+				);
+
+				for (let i = 0; i < updatedTask.executors.length; i++) {
+					await this.notifications.sendNotification(
+						LATE_TASK_TO_EXECUTORS_TITLE,
+						LATE_TASK_TO_EXECUTORS_CONTENT(updatedTask.name),
+						updatedTask.executors[i].executorUuid,
+					);
+				}
 			}
 		}
 	}

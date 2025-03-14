@@ -17,16 +17,31 @@ import { ProcessesService } from './processes.service';
 import { JwtAuthGuard } from '../../guards/jwtAuth.guard';
 import { IsControllerGuard } from '../../guards/isController.guard';
 import { CreateProcessDto } from './dto/create-process.dto';
-import { Process, ProcessStatus } from '@prisma/client';
+import { Process, ProcessStatus, Role } from '@prisma/client';
 import { AuthRequest } from '../../interfaces/AuthRequest.interface';
 import {
 	COMPLETE_TASKS_BEFORE,
+	INVALID_CONTROLLER,
 	INVALID_PROCESS_ID,
 	INVALID_PROJECT_ID,
 } from './constants';
 import { UpdateProcessDto } from './dto/update-process.dto';
 import { GetProcessesQueryDto } from './dto/get-processes-query.dto';
 import { TasksService } from '../tasks/tasks.service';
+import { UserService } from '../user/user.service';
+import { NotificationsGateway } from '../notifications/notifications.gateway';
+import {
+	ATTACH_MESSAGE_TO_ADMINS_CONTENT,
+	COMPLETE_PROCESS_STATUS_TO_ADMINS_CONTENT,
+	NEW_PROCESS_TO_ADMINS_CONTENT,
+	NEW_PROCESS_TO_CONTROLLER_CONTENT,
+} from '../notifications/constants/notifications.content';
+import {
+	ATTACH_MESSAGE_TO_ADMINS_TITLE,
+	COMPLETE_PROCESS_STATUS_TO_ADMINS_TITLE,
+	NEW_PROCESS_TO_ADMINS_TITLE,
+	NEW_PROCESS_TO_CONTROLLER_TITLE,
+} from '../notifications/constants/notification.titles';
 
 @Controller('processes')
 @UseGuards(JwtAuthGuard)
@@ -34,6 +49,8 @@ export class ProcessesController {
 	constructor(
 		private readonly processesService: ProcessesService,
 		private readonly taskService: TasksService,
+		private readonly userService: UserService,
+		private readonly notifications: NotificationsGateway,
 	) {}
 
 	@Post('create')
@@ -42,13 +59,35 @@ export class ProcessesController {
 		@Body() dto: CreateProcessDto,
 		@Req() req: AuthRequest,
 	): Promise<Process> {
-		const { projectUuid, name, description } = dto;
+		const { projectUuid, name, description, controllerUuid } = dto;
 
-		return this.processesService
-			.createProcess(projectUuid, name, description, req.user.uuid)
+		const controller = await this.userService.getUserById(controllerUuid);
+
+		if (!controller || controller.role != Role.CONTROLLER) {
+			throw new NotFoundException(INVALID_CONTROLLER);
+		}
+
+		const process = await this.processesService
+			.createProcess(projectUuid, name, description, controllerUuid)
 			.catch(() => {
 				throw new NotFoundException(INVALID_PROJECT_ID);
 			});
+
+		if (req.user.role != Role.ADMIN) {
+			await this.notifications.sendNotificationToAllByRoles(
+				NEW_PROCESS_TO_ADMINS_TITLE,
+				NEW_PROCESS_TO_ADMINS_CONTENT(name),
+				Role.ADMIN,
+			);
+		}
+
+		await this.notifications.sendNotification(
+			NEW_PROCESS_TO_CONTROLLER_TITLE,
+			NEW_PROCESS_TO_CONTROLLER_CONTENT(process.name),
+			controllerUuid,
+		);
+
+		return process;
 	}
 
 	@Put('/update/:id')
@@ -105,10 +144,18 @@ export class ProcessesController {
 			throw new ForbiddenException(COMPLETE_TASKS_BEFORE);
 		}
 
-		return await this.processesService.updateProcessStatus(
+		const process = await this.processesService.updateProcessStatus(
 			ProcessStatus.COMPLETED,
 			id,
 		);
+
+		await this.notifications.sendNotificationToAllByRoles(
+			COMPLETE_PROCESS_STATUS_TO_ADMINS_TITLE,
+			COMPLETE_PROCESS_STATUS_TO_ADMINS_CONTENT(process.name),
+			Role.ADMIN,
+		);
+
+		return process;
 	}
 
 	@Get('/:id/progress')

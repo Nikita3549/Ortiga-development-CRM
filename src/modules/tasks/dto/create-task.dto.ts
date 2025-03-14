@@ -14,6 +14,9 @@ export class CreateTaskDto {
 	@IsUUID()
 	executorUuid: string;
 
+	@IsUUID()
+	controllerUuid: string;
+
 	@IsEnum(TaskPriority)
 	priority: TaskPriority;
 

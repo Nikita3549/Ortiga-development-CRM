@@ -17,12 +17,16 @@ import { JwtAuthGuard } from '../../guards/jwtAuth.guard';
 import { IsAdminGuard } from '../../guards/isAdmin.guard';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
-import { ProcessStatus, Project, ProjectStatus } from '@prisma/client';
+import { ProcessStatus, Project, ProjectStatus, Role } from '@prisma/client';
 import { AuthRequest } from '../../interfaces/AuthRequest.interface';
 import { INVALID_PROJECT_ID, UNCOMPLETED_PROCESSES } from './constants';
 import { GetProjectsQueryDto } from './dto/get-projects-query.dto';
 import { ProcessesService } from '../processes/processes.service';
 import { TasksService } from '../tasks/tasks.service';
+import { NotificationsGateway } from '../notifications/notifications.gateway';
+import { IsControllerGuard } from '../../guards/isController.guard';
+import { NEW_PROJECT_TO_ADMINS_CONTENT } from '../notifications/constants/notifications.content';
+import { NEW_PROJECT_TO_ADMINS_TITLE } from '../notifications/constants/notification.titles';
 
 @Controller('projects')
 @UseGuards(JwtAuthGuard)
@@ -31,9 +35,10 @@ export class ProjectsController {
 		private readonly projectService: ProjectsService,
 		private readonly processesService: ProcessesService,
 		private readonly tasksService: TasksService,
+		private readonly notifications: NotificationsGateway,
 	) {}
 
-	@UseGuards(IsAdminGuard)
+	@UseGuards(IsControllerGuard)
 	@Post('create')
 	async createProject(
 		@Body() dto: CreateProjectDto,
@@ -41,11 +46,19 @@ export class ProjectsController {
 	): Promise<Project> {
 		const { name, description } = dto;
 
-		return this.projectService.createProject(
+		const project = await this.projectService.createProject(
 			name,
 			description,
 			req.user.uuid,
 		);
+
+		await this.notifications.sendNotificationToAllByRoles(
+			NEW_PROJECT_TO_ADMINS_TITLE,
+			NEW_PROJECT_TO_ADMINS_CONTENT(name),
+			Role.ADMIN,
+		);
+
+		return project;
 	}
 
 	@Get()
@@ -69,7 +82,7 @@ export class ProjectsController {
 	}
 
 	@Put('/update/:id')
-	@UseGuards(IsAdminGuard)
+	@UseGuards(IsControllerGuard)
 	async updateProject(
 		@Param('id') id: string,
 		@Body() dto: UpdateProjectDto,
@@ -84,7 +97,7 @@ export class ProjectsController {
 	}
 
 	@Patch('/:id/complete')
-	@UseGuards(IsAdminGuard)
+	@UseGuards(IsControllerGuard)
 	async completeProject(@Param('id') id: string): Promise<Project> {
 		const uncompletedProcesses =
 			await this.processesService.getAllProcessesByStatus(
@@ -99,7 +112,7 @@ export class ProjectsController {
 	}
 
 	@Patch('/:id/close')
-	@UseGuards(IsAdminGuard)
+	@UseGuards(IsControllerGuard)
 	async closeProject(@Param('id') id: string) {
 		await this.updateStatus(ProjectStatus.CLOSED, id);
 
@@ -109,7 +122,7 @@ export class ProjectsController {
 	}
 
 	@Patch('/:id/reopen')
-	@UseGuards(IsAdminGuard)
+	@UseGuards(IsControllerGuard)
 	async reopenProject(@Param('id') id: string) {
 		await this.updateStatus(ProjectStatus.IN_PROCESS, id);
 

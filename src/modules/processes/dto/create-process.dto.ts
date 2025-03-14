@@ -9,4 +9,7 @@ export class CreateProcessDto {
 
 	@IsString()
 	description: string;
+
+	@IsUUID()
+	controllerUuid: string;
 }
