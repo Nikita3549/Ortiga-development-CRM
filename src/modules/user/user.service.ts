@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Role, Task, User } from '@prisma/client';
+import { Role, User } from '@prisma/client';
 import { ISaveUserData } from './interfaces/saveUserData.interface';
 import { IPublicUserData } from './interfaces/publicUserData.interface';
 import { IUpdateData } from './interfaces/update-data.interface';
+import { IUserWithSettings } from './interfaces/userWithSettings.interface';
 
 @Injectable()
 export class UserService {
@@ -40,6 +41,19 @@ export class UserService {
 				surname: true,
 				phoneNumber: true,
 				role: true,
+			},
+		});
+	}
+
+	async getUserWithSettings(
+		userUuid: string,
+	): Promise<IUserWithSettings | null> {
+		return this.prisma.user.findFirst({
+			where: {
+				uuid: userUuid,
+			},
+			include: {
+				settings: true,
 			},
 		});
 	}

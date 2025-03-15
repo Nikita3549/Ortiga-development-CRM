@@ -4,4 +4,7 @@ import { IsBoolean } from 'class-validator';
 export class UserSettingsDto implements IUserSettings {
 	@IsBoolean()
 	darkTheme: boolean;
+
+	@IsBoolean()
+	emailSending: boolean;
 }

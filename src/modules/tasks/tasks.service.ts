@@ -3,7 +3,6 @@ import { PrismaService } from '../prisma/prisma.service';
 import {
 	AttachedMessage,
 	AttachedMessageType,
-	Project,
 	ProjectStatus,
 	Role,
 	Task,
@@ -14,12 +13,10 @@ import {
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ITaskWithExecutors } from './interfaces/taskWithExecutors.interface';
 import {
-	COMPLETE_TASK_TO_EXECUTORS_TITLE,
 	LATE_TASK_STATUS_TO_ADMINS_TITLE,
 	LATE_TASK_TO_EXECUTORS_TITLE,
 } from '../notifications/constants/notification.titles';
 import {
-	COMPLETE_TASK_TO_EXECUTORS_CONTENT,
 	LATE_TASK_STATUS_TO_ADMINS_CONTENT,
 	LATE_TASK_TO_EXECUTORS_CONTENT,
 } from '../notifications/constants/notifications.content';

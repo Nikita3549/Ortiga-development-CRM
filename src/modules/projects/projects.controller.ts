@@ -14,7 +14,6 @@ import {
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { JwtAuthGuard } from '../../guards/jwtAuth.guard';
-import { IsAdminGuard } from '../../guards/isAdmin.guard';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { ProcessStatus, Project, ProjectStatus, Role } from '@prisma/client';

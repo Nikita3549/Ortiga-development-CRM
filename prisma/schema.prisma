@@ -32,8 +32,9 @@ model User {
 }
 
 model UserSettings {
-  userUuid  String  @id @map("user_uuid")
-  darkTheme Boolean @default(false) @map("dark_theme")
+  userUuid     String  @id @map("user_uuid")
+  darkTheme    Boolean @default(false) @map("dark_theme")
+  emailSending Boolean @default(true) @map("email_sending")
 
   users_uuid User @relation(fields: [userUuid], references: [uuid], onDelete: Cascade)
 

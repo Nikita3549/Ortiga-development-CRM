@@ -31,13 +31,11 @@ import { TasksService } from '../tasks/tasks.service';
 import { UserService } from '../user/user.service';
 import { NotificationsGateway } from '../notifications/notifications.gateway';
 import {
-	ATTACH_MESSAGE_TO_ADMINS_CONTENT,
 	COMPLETE_PROCESS_STATUS_TO_ADMINS_CONTENT,
 	NEW_PROCESS_TO_ADMINS_CONTENT,
 	NEW_PROCESS_TO_CONTROLLER_CONTENT,
 } from '../notifications/constants/notifications.content';
 import {
-	ATTACH_MESSAGE_TO_ADMINS_TITLE,
 	COMPLETE_PROCESS_STATUS_TO_ADMINS_TITLE,
 	NEW_PROCESS_TO_ADMINS_TITLE,
 	NEW_PROCESS_TO_CONTROLLER_TITLE,
