@@ -1855,6 +1855,9 @@ components:
       properties:
         darkTheme:
           type: boolean
+          example: false
+        emailSending:
+          type: boolean
           example: true
     User:
       type: object
