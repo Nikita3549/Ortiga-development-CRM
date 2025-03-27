@@ -1581,7 +1581,7 @@ paths:
         security:
           - bearerAuth: [ ]
         tags:
-          - Notifications
+          - notifications
         responses:
           "200":
             description: Список уведомлений
@@ -1600,7 +1600,7 @@ paths:
         security:
           - bearerAuth: [ ]
         tags:
-          - Notifications
+          - notifications
         parameters:
           - name: id
             in: path
@@ -1619,6 +1619,49 @@ paths:
             description: Уведомление не найдено
           "401":
             description: Неавторизованный доступ
+    notifications:
+      get:
+        tags:
+          - notifications
+        summary: WS Установление WebSocket-соединения для уведомлений.
+        description: Подключение к WebSocket для получения уведомлений. Для подключения требуется передать JWT-токен авторизации. Во время подключения приходит ивент notification_receive, который отправляет json нового уведомления
+
+        parameters:
+          - name: token
+            in: query
+            required: true
+            description: JWT-токен для аутентификации пользователя.
+            schema:
+              type: string
+        responses:
+          "101":
+            description: Успешное установление WebSocket-соединения.
+          "401":
+            description: Неверный или отсутствующий токен.
+
+    notifications_read:
+      post:
+        tags:
+          - notifications
+        summary: Пометить уведомление как прочитанное.
+        description: Клиент отправляет запрос для пометки уведомления как прочитанного. Если уведомление не найдено или не принадлежит пользователю, возвращается ошибка.
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  notificationUuid:
+                    type: string
+                    example: notification uuid
+        responses:
+          "200":
+            description: Уведомление успешно помечено как прочитанное.
+          "400":
+            description: Неверный идентификатор уведомления или уведомление не принадлежит пользователю.
+          "500":
+            description: Внутренняя ошибка сервера.
 
 components:
   schemas:

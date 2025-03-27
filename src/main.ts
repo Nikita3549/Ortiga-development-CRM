@@ -17,6 +17,6 @@ async function bootstrap() {
 	app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
 	app.useGlobalFilters(new NotificationFilter());
 
-	await app.listen(process.env.API_PORT ?? 3000);
+	await app.listen(process.env.API_PORT ?? 3000, '0.0.0.0');
 }
 bootstrap();
